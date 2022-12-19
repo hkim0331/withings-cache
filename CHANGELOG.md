@@ -5,6 +5,10 @@
 - meas
 - when doing in kyutech, it takes longer time rather than in home. why?
 
+
+## 0.3.7 - 2022-12-19
+- git@github.com:hkim0331/withings-cache.git
+
 ## 0.3.6 - 2022-12-19
 - prep for github
 - gitignore /db-dump/
