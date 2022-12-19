@@ -4,7 +4,12 @@
 - task
 - meas
 - when doing in kyutech, it takes longer time rather than in home. why?
+- should unique against same id and same created time.
 
+## 0.3.8 - 2022-12-19
+- (filter :valid (fetch-users)) でフィルタしたユーザで、
+  (init-db "2022-09-01") できた。
+  wc.kohhoh.jp でやってみるか。
 
 ## 0.3.7 - 2022-12-19
 - git@github.com:hkim0331/withings-cache.git
