@@ -76,3 +76,11 @@
 
 ;; get meas
 ;; Store fetched data in database.
+;; PATH=.:${PATH}
+;; https --session=auth post wc.kohhoh.jp/api/token/${ID}/refresh >/dev/null
+;; https -pb --session=auth post wc.kohhoh.jp/api/meas \
+;;   id=${ID} \
+;;   meastype=1 \
+;;   lastupdate=${LASTUPDATE} \
+;;   startdate=${STARTDATE} \
+;;   enddate=${ENDDATE} | wc-date-value.clj
