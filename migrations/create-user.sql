@@ -1,2 +1,2 @@
-create user 'user'@'localhost' identified by 'secret';
-grant all on withings.* to 'user'@'localhost';
+CREATE USER 'user'@'localhost' IDENTIFIED BY 'secret';
+GRANT ALL ON withings.* TO 'user'@'localhost';

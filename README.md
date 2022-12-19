@@ -1,8 +1,13 @@
 # withings-cache
 
-withings から取ってきたデータを MariaDB にストアする。
+Withings から取ってきたデータを MariaDB にストアする。
+kohhoh でも、ローカル PC でも同じことができるように。
 
 ## Required
 
 * bb
-* mariadb or mysql-server
+* mariadb (or mysql-server)
+
+    % brew install babashka mariadb
+
+## Usage

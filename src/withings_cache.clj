@@ -8,7 +8,7 @@
 (def wc "https://wc.kohhoh.jp")
 (def cookie "cookie.txt")
 
-;; mariadb
+;; withing-client 
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
 
@@ -16,8 +16,8 @@
 (defn login
   "login. if success, updates cookie and returns 302."
   []
-  (let [params (str "login=" admin "&password=" password)
-        api (str wc "/")]
+  (let [api (str wc "/")
+        params (str "login=" admin "&password=" password)]
     (curl/post api {:raw-args ["-c" cookie "-d" params]
                     :follow-redirects false})))
 
@@ -25,16 +25,21 @@
   (login)
   :rcf)
 
+;; short-hand functions
+(defn curl-get [url & params]
+  (curl/get url {:raw-args (vec (concat ["-b" cookie] params))}))
+
+(defn curl-post [url & params]
+  (curl/post url {:raw-args (vec (concat ["-b" cookie] params))}))
+
 ;; users
 (defn fetch-users
   "fetch users via withing-client, return the user json"
   []
-  (let [api (str wc "/api/users")]
-    ;; (println "api" api)
-    (-> (curl/get api {:raw-args ["-b" cookie]})
-        :body
-        (json/parse-string true)
-        vec)))
+  (-> (curl-get (str wc "/api/users"))
+      :body
+      (json/parse-string true)
+      vec))
 
 (comment
   (def users (fetch-users))
@@ -44,20 +49,17 @@
 (defn refresh!
   "Refresh user id's refresh token."
   [id]
-  (let [api (str wc "/api/token/" id "/refresh")]
-    ;; (println "api" api)
-    (curl/post api {:raw-args ["-b" cookie]})))
+  (curl-post (str wc "/api/token/" id "/refresh")))
 
 (comment
   (refresh! 16)
-  (refresh! 32)
+  ;; (refresh! 32)
   :rcf)
 
 (defn refresh-all!
   "Refresh all available user tokens."
   []
-  (let [api (str wc "/api/tokens/refresh-all")]
-    (curl/post api {:raw-args ["-b" cookie]})))
+  (curl-post (str wc "/api/tokens/refresh-all")))
 
 (comment
   ;; 32 山﨑悠翔 がリフレッシュできない。ひとまずオフ。
@@ -70,9 +72,35 @@
   (->> (filter :valid users)
        (map :id)
        (pmap refresh!)))
+
 (comment 
   (refresh-all-pmap! users)
   :rcf)
 
 ;; get meas
 ;; Store fetched data in database.
+(defn fetch-meas-with
+  [params]
+  (-> (curl-post (str wc "/api/meas") "-d" params)
+      :body
+      (json/parse-string true)
+      vec))
+
+(defn fetch-meas
+  ([id type d1]
+   (let [params (str "id=" id "&meastype=" type "&lastupdate=" d1)]
+     (fetch-meas-with params)))
+  ([id type d1 d2]
+   (let [params (str "id=" id "&meastype=" type "&startdate=" d1 "&enddate=" d2)]
+     (fetch-meas-with params))))
+
+(defn fetch-weight
+  "weight: meastype=1"
+  ([id lastupdate] 
+   (fetch-meas id 1 lastupdate))
+  ([id startdate enddate] 
+   (fetch-meas id 1 startdate enddate)))
+
+(comment
+  (fetch-weight 16 "2022-10-30")
+  :rcf)
