@@ -1,0 +1,28 @@
+mysql user@(none):(none)> select name, line_id from users;
+mysql user@(none):(none)> use withings;
+mysql user@(none):withings> select name, line_id from users;
++---------------+-----------------------------------+
+| name          | line_id                           |
++---------------+-----------------------------------+
+| hkimura       | Ue6431fc148f9e7856610eff00422b24a |
+| お名前        | <null>                            |
+| Tkanori Ishii | <null>                            |
+| 近藤美月      | Uc62759cce6c4db9baf43d5c1c7efda42 |
+| 水間仁子      | U7e2908f5448e3b8b5e664afffa577fe6 |
+| 香田桜次郎    | U687ccd32255e75423ef374b794489e30 |
+| 山﨑悠翔      | Ucffb7b024faba907d9a56083035187fa |
+| 森静玖        | U4c2a6d5eab750c8f9eb14f2475b87183 |
+| 宮永啓吾      | U4d5ef4268bfa764780853c59691fa7ec |
+| 永松莉菜      | Ucbcbd75e1596cd354c74b4b7c1aa7214 |
+| 清瀬雄大      | U313602fc209750b2f02540ef252137af |
+| 本村莉菜      | U60defff4e54547db43c9a78b7e7d47c1 |
+| 古賀学        | U60f8252d0f676489fd15a606b729d0cb |
+| 田中龍雅      | Ud3f5ecd507bc9fdc8c9cbc65cc0d1587 |
+| 長谷心美      | U8d36b9439cc5dfa620ce8d885c23a95f |
+| 西明虹        | U41d098d6863e91c9ee6c41d710e8eb4a |
+| 板橋真子      | Ue583b549d2ce4eb075d6e3053b73b3e1 |
+| 清水優陸      | Ue2e3a63b5ba29aaf21300b243924b9ee |
+| 中野弥花      | Uf9d78be649f74b5bcf4587423dfe7387 |
+| 長瀬めぐみ    | <null>                            |
+| 野中颯汰      | <null>                            |
++---------------+-----------------------------------+
