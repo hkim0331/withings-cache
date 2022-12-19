@@ -8,7 +8,7 @@
 (def wc "https://wc.kohhoh.jp")
 (def cookie "cookie.txt")
 
-;; withing-client 
+;; withing-client
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
 
@@ -73,7 +73,7 @@
        (map :id)
        (pmap refresh!)))
 
-(comment 
+(comment
   (refresh-all-pmap! users)
   :rcf)
 
@@ -96,11 +96,12 @@
 
 (defn fetch-weight
   "weight: meastype=1"
-  ([id lastupdate] 
+  ([id lastupdate]
    (fetch-meas id 1 lastupdate))
-  ([id startdate enddate] 
+  ([id startdate enddate]
    (fetch-meas id 1 startdate enddate)))
 
 (comment
   (fetch-weight 16 "2022-10-30")
+  (fetch-weight 16 "2022-10-31" "2022-11-20")
   :rcf)
