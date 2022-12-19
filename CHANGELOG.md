@@ -5,7 +5,7 @@
 - meas
 
 
-## 0.3.1 - 2022-12-19
+## 0.3.3 - 2022-12-19
 fetch meas
 - checked git configurations
 - curl-get
