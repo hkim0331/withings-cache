@@ -2,7 +2,18 @@
 (ns src.withings-cache
   (:require
    [babashka.curl :as curl]
+   [babashka.pods :as pods]
    [cheshire.core :as json]))
+
+(pods/load-pod 'org.babashka/mysql "0.1.1")
+(require '[pod.babashka.mysql :as mysql])
+(def db {:dbtype   "mysql"
+         :host     "localhost"
+         :port     3306
+         :dbname   "withings"
+         :user     "user"
+         :password "secret"})
+
 
 ;;(def wc-url "localhost:3000")
 (def wc "https://wc.kohhoh.jp")
@@ -11,6 +22,9 @@
 ;; withing-client
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
+
+;; withings database
+
 
 ;; authentication
 (defn login
@@ -78,7 +92,6 @@
   :rcf)
 
 ;; get meas
-;; Store fetched data in database.
 (defn fetch-meas-with
   [params]
   (-> (curl-post (str wc "/api/meas") "-d" params)
@@ -105,3 +118,28 @@
   (fetch-weight 16 "2022-10-30")
   (fetch-weight 16 "2022-10-31" "2022-11-20")
   :rcf)
+
+;; save meas
+(defn save-one!
+  [id {:keys [created measures]}]
+  (println "save-one!" id created measures)
+  )
+
+(defn save!
+  [id meas]
+  (doseq [mea meas]
+    (save-one! id mea)))
+
+(defn save-meas!
+  ([id type d1]
+   (save! id (fetch-meas id type d1)))
+  ([id type d1 d2]
+   (save! id (fetch-meas id type d1 d2))))
+
+(defn save-weight!
+  ([id lastupdate]
+   (save-meas! id 1 lastupdate))
+  ([id startdate enddate]
+   (save-meas! id 1 startdate enddate)))
+
+(save-weight! 16 "2022-09-01")
