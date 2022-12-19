@@ -1,4 +1,6 @@
 /.calva/output-window/
 /.clj-kondo/.cache
 /.lsp/.cache
+/db-dumps/
+/install/
 cookie.txt
