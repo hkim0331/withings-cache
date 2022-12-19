@@ -6,9 +6,3 @@ withings から取ってきたデータを MariaDB にストアする。
 
 * bb
 * mariadb or mysql-server
-
-
-
-
-
-
