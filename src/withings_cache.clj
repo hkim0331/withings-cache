@@ -104,7 +104,8 @@
    (let [params (str "id=" id "&meastype=" type "&lastupdate=" d1)]
      (fetch-meas-with params)))
   ([id type d1 d2]
-   (let [params (str "id=" id "&meastype=" type "&startdate=" d1 "&enddate=" d2)]
+   (let [params
+         (str "id=" id "&meastype=" type "&startdate=" d1 "&enddate=" d2)]
      (fetch-meas-with params))))
 
 (defn fetch-weight
@@ -128,6 +129,7 @@
   (* value (pow 10 unit)))
 
 ;; FIXME: 複数の meas には対応していない。
+;; FIXME: must uniq same id, same created
 (defn save-one!
   [id {:keys [created measures]}]
   (let [meas (first measures) ;; <-
@@ -160,4 +162,6 @@
   ([id startdate enddate]
    (save-meas! id 1 startdate enddate)))
 
-(save-weight! 16 "2022-11-01")
+(comment
+  (save-weight! 16 "2022-09-01")
+  )

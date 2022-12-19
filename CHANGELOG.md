@@ -4,6 +4,7 @@
 - task
 - meas
 - when doing in kyutech, it takes longer time rather than in home. why?
+- should unique against same id and same created time.
 
 
 ## 0.3.7 - 2022-12-19
