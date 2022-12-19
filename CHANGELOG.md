@@ -5,6 +5,7 @@
 - meas
 
 ## 0.3.x-SNAPSHOTS
+- checked git configurations
 
 ## 0.2.2 - 2022-12-19
 - login, users, tokens
