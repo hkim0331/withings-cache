@@ -8,7 +8,7 @@
 (def wc "https://wc.kohhoh.jp")
 (def cookie "cookie.txt")
 
-;; mariadb
+;; withing-client 
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
 
