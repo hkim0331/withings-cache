@@ -23,9 +23,6 @@
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
 
-;; withings database
-
-
 ;; authentication
 (defn login
   "login. if success, updates cookie and returns 302."
@@ -57,7 +54,7 @@
 
 (comment
   (def users (fetch-users))
-  :rcf)
+  )
 
 ;; tokens
 (defn refresh!
@@ -134,7 +131,7 @@
   [id {:keys [created measures]}]
   (let [meas (first measures) ;; <-
         type (:type meas)]
-    (println "save-one!" id type created (meas->float meas))
+    ;; (println "save-one!" id type created (meas->float meas))
     (mysql/execute!
      db
      ["insert into meas
@@ -165,3 +162,18 @@
 (comment
   (save-weight! 16 "2022-09-01")
   )
+
+(defn init-db
+  [date]
+  (let [users (filter :valid (fetch-users))]
+    (refresh-all-pmap! users)
+    (doseq [{:keys [id]} users]
+      (println id)
+      (save-weight! id date))))
+
+(init-db "2022-09-01")
+;; 48
+;; 32
+;; 17
+;; ; clojure.lang.ExceptionInfo: babashka.curl: status 400 src.withings-cache /Volumes/RAM_DISK/withings-cache/src/withings_cache.clj:44:3
+;; ; Evaluation of file withings_cache.clj failed: class clojure.lang.ExceptionInfo
