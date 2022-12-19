@@ -3,7 +3,8 @@
   (:require
    [babashka.curl :as curl]
    [babashka.pods :as pods]
-   [cheshire.core :as json]))
+   [cheshire.core :as json]
+   [clojure.math  :refer [pow]]))
 
 (pods/load-pod 'org.babashka/mysql "0.1.1")
 (require '[pod.babashka.mysql :as mysql])
@@ -13,7 +14,6 @@
          :dbname   "withings"
          :user     "user"
          :password "secret"})
-
 
 ;;(def wc-url "localhost:3000")
 (def wc "https://wc.kohhoh.jp")
@@ -119,11 +119,29 @@
   (fetch-weight 16 "2022-10-31" "2022-11-20")
   :rcf)
 
+;;;;;;;;;;;;;;
 ;; save meas
+;; FIXME: meas->float returns 93.60000000000001
+(defn meas->float
+  [{:keys [value unit] :as params}]
+  ;; (println value unit params)
+  (* value (pow 10 unit)))
+
+;; FIXME: 複数の meas には対応していない。
 (defn save-one!
   [id {:keys [created measures]}]
-  (println "save-one!" id created measures)
-  )
+  (let [meas (first measures) ;; <-
+        type (:type meas)]
+    (println "save-one!" id type created (meas->float meas))
+    (mysql/execute!
+     db
+     ["insert into meas
+       (user_id, type, measure, created)
+       values (?,?,?, from_unixtime(?))"
+      id
+      type
+      (meas->float meas)
+      created])))
 
 (defn save!
   [id meas]
@@ -142,4 +160,4 @@
   ([id startdate enddate]
    (save-meas! id 1 startdate enddate)))
 
-(save-weight! 16 "2022-09-01")
+(save-weight! 16 "2022-11-01")

@@ -4,7 +4,12 @@
 - task
 - meas
 - when doing in kyutech, it takes longer time rather than in home. why?
-- unix timestamp to datetime
+
+
+## 0.3.5 - 2022-12-19
+- defined (save-weight! id "datetime")
+- unix timestamp to datetime.
+  mysql has a unix_time(int) function.
 
 ## 0.3.4 - 2022-12-19
 ### Changed
