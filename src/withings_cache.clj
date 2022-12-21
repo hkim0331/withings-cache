@@ -9,7 +9,7 @@
 (pods/load-pod 'org.babashka/mysql "0.1.1")
 (require '[pod.babashka.mysql :as mysql])
 (def db {:dbtype   "mysql"
-         :host     "localhost"
+         :host     "localhost"*
          :port     3306
          :dbname   "withings"
          :user     "user"
