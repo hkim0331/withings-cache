@@ -161,7 +161,7 @@
 
 (comment
   (save-weight! 16 "2022-09-01")
-  )
+  :rcf)
 
 (defn init-db
   [date]
@@ -171,7 +171,9 @@
       (println id)
       (save-weight! id date))))
 
-(init-db "2022-09-01")
+(comment 
+  (init-db "2022-09-01")
+  :rcf)
 ;; 48
 ;; 32
 ;; 17
