@@ -4,7 +4,10 @@
 - task
 - meas
 - when doing in kyutech, it takes longer time rather than in home. why?
-- should unique against same id and same created time.
+- should be unique against same id and same created time. how?
+- hyperfiddle.rcf
+
+## 0.4.9-SNAPSHOT
 
 ## 0.3.8 - 2022-12-19
 - (filter :valid (fetch-users)) でフィルタしたユーザで、

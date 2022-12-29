@@ -6,14 +6,15 @@
    [cheshire.core :as json]
    [clojure.math  :refer [pow]]))
 
+
 (pods/load-pod 'org.babashka/mysql "0.1.1")
 (require '[pod.babashka.mysql :as mysql])
 (def db {:dbtype   "mysql"
-         :host     "localhost"*
+         :host     "localhost"
          :port     3306
          :dbname   "withings"
-         :user     "user"
-         :password "secret"})
+         :user     (System/getenv "MYSQL_USER")
+         :password (System/getenv "MYSQL_PASSWORD")})
 
 ;;(def wc-url "localhost:3000")
 (def wc "https://wc.kohhoh.jp")
@@ -33,7 +34,7 @@
                     :follow-redirects false})))
 
 (comment
-  (login)
+  (:status (login))
   :rcf)
 
 ;; short-hand functions
@@ -64,18 +65,13 @@
 
 (comment
   (refresh! 16)
-  ;; (refresh! 32)
+  (refresh! 51)
   :rcf)
 
-(defn refresh-all!
-  "Refresh all available user tokens."
-  []
-  (curl-post (str wc "/api/tokens/refresh-all")))
-
-(comment
-  ;; 32 山﨑悠翔 がリフレッシュできない。ひとまずオフ。
-  (refresh-all!)
-  :rcf)
+;; (defn refresh-all!
+;;   "Refresh all available user tokens."
+;;   []
+;;   (curl-post (str wc "/api/tokens/refresh-all")))
 
 ;; pmap でスピードアップ。
 (defn refresh-all-pmap!
@@ -85,7 +81,7 @@
        (pmap refresh!)))
 
 (comment
-  (refresh-all-pmap! users)
+  (refresh-all-pmap! (fetch-users))
   :rcf)
 
 ;; get meas
@@ -97,12 +93,12 @@
       vec))
 
 (defn fetch-meas
-  ([id type d1]
-   (let [params (str "id=" id "&meastype=" type "&lastupdate=" d1)]
+  ([id type day1]
+   (let [params (str "id=" id "&meastype=" type "&lastupdate=" day1)]
      (fetch-meas-with params)))
-  ([id type d1 d2]
+  ([id type day1 day2]
    (let [params
-         (str "id=" id "&meastype=" type "&startdate=" d1 "&enddate=" d2)]
+         (str "id=" id "&meastype=" type "&startdate=" day1 "&enddate=" day2)]
      (fetch-meas-with params))))
 
 (defn fetch-weight
@@ -126,7 +122,7 @@
   (* value (pow 10 unit)))
 
 ;; FIXME: 複数の meas には対応していない。
-;; FIXME: must uniq same id, same created
+;; FIXME: must uniq agains (id, created)
 (defn save-one!
   [id {:keys [created measures]}]
   (let [meas (first measures) ;; <-
@@ -148,10 +144,10 @@
     (save-one! id mea)))
 
 (defn save-meas!
-  ([id type d1]
-   (save! id (fetch-meas id type d1)))
-  ([id type d1 d2]
-   (save! id (fetch-meas id type d1 d2))))
+  ([id type day1]
+   (save! id (fetch-meas id type day1)))
+  ([id type day1 day2]
+   (save! id (fetch-meas id type day1 day2))))
 
 (defn save-weight!
   ([id lastupdate]
@@ -164,16 +160,19 @@
   :rcf)
 
 (defn init-db
-  [date]
+  ""
+  [last-update]
   (let [users (filter :valid (fetch-users))]
     (refresh-all-pmap! users)
     (doseq [{:keys [id]} users]
       (println id)
-      (save-weight! id date))))
+      ;; should change to `save-multi!`
+      (save-weight! id last-update))))
 
-(comment 
+(comment
   (init-db "2022-09-01")
   :rcf)
+
 ;; 48
 ;; 32
 ;; 17
