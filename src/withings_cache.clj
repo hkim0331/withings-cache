@@ -4,7 +4,8 @@
    [babashka.pods :as pods]
    [cheshire.core :as json]
    [clojure.java.shell :refer [sh]]
-   [clojure.math  :refer [pow]]))
+   [clojure.math  :refer [pow]]
+   [clojure.string :as str]))
 
 (pods/load-pod 'org.babashka/mysql "0.1.1")
 (require '[pod.babashka.mysql :as mysql])
@@ -93,10 +94,19 @@
 ;; direct download from withings
 (defn to-unix-time
   [datetime]
-  (:out (sh "date" "-d" datetime "+%s")))
+  (-> (sh "date" "-d" datetime "+%s")
+      :out
+      str/trim-newline))
+
+(defn from-unix-time
+  [n]
+  (-> (sh "date" "-d" (str "@" n) "+%Y/%m/%d %T")
+      :out
+      str/trim-newline))
 
 (comment
-  (to-unix-time "2022-12-20 12:34:56")
+  (def ut (to-unix-time "2022-12-20 00:00:00"))
+  (from-unix-time ut)
   :rcf)
 
 (def users (fetch-users))
@@ -115,17 +125,25 @@
 ;;   --data "action=getmeas&lastupdate=1669849930" \
 ;;   'https://wbsapi.withings.net/measure'
 
-(def withings "https://wbsapi.withings.net/measure")case
+(def withings "https://wbsapi.withings.net/measure")
 
 (defn withings-get-meas
   "users must be set before calling this function."
   [id date users]
-  (let [token (access-token id users)
-        params (str "action=getmeas&lastdate=" (to-unix-time date))]
-    (curl/get withings {:raw-args ["-H" (str "Authorization: Bearer " token)
-                                   "-d" params]})))
+  (let [token  (access-token id users)
+        params (str "action=getmeas&lastupdate=" (to-unix-time date))]
+    (println "params " params)
+    (->
+     (curl/get withings {:raw-args ["-H" (str "Authorization: Bearer " token)
+                                    "-d" params]})
+     :body
+     (json/parse-string true)
+     (get-in [:body :measuregrps])
+     )))
 
-(withings-get-meas 51 "2022-12-01" users)
+(comment
+  (def ret (withings-get-meas 51 "2022-12-20 00:00:00" users))
+  :rcf)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; get via https://wc.kohhoh.jp
@@ -171,7 +189,6 @@
   (def users (refresh-all!))
   (get-weight 27 "2022-12-01")
   (def record (get-meas-all 27 "2022-12-01")) ;; fixed at 0.15.5
-  (withing-get-meas 27 "2022-12-01" users)
   :rcf)
 
 

@@ -7,8 +7,11 @@
 - hyperfiddle.rcf
 - direct downloading from withings. access tokens should be from wc.kohhoh.
 - require java.time fails in babashka.
+- 日付の扱いが。
 
-## 0.5.1-SNAPSHOT
+## 0.5.1 - 2022-12-30
+### Fix typo(bug)
+- lastupdate for lastdate
 ### Changed
 - refresh-all! calls fetch-users internally.
 
