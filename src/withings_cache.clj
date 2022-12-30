@@ -16,15 +16,13 @@
          :user     (System/getenv "MYSQL_USER")
          :password (System/getenv "MYSQL_PASSWORD")})
 
-;; debug
-;;(def wc "http://localhost:3000")
 (def wc "https://wc.kohhoh.jp")
 (def cookie "cookie.txt")
 
-;; withing-client
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; authentication
 (defn login
   "login. if success, updates cookie and returns 302."
@@ -34,11 +32,11 @@
     (curl/post api {:raw-args ["-c" cookie "-d" params]
                     :follow-redirects false})))
 
-(comment
-  (:status (login))
-  :rcf)
+;; `fetch-users` requires login.
+(login)
 
 ;; short-hand functions
+;; conversations to wc.kohhoh.jp require cookie.
 (defn curl-get [url & params]
   (curl/get url {:raw-args (vec (concat ["-b" cookie] params))}))
 
@@ -67,15 +65,10 @@
   [id]
   (curl-post (str wc "/api/token/" id "/refresh")))
 
-(comment
-  (refresh! 16)
-  (refresh! 51)
-  :rcf)
-
 ;; pmap でスピードアップ。
 (defn refresh-all!
-  "use old users map internaly,
-   returns refreshed user map."
+  "use old users map internaly, returns refreshed user map.
+   becore fetch-users, login is required."
   []
   (->> (filter :valid (fetch-users))
        (map :id)
@@ -83,15 +76,16 @@
   (fetch-users))
 
 (comment
-  (refresh-all!)
+  (def users (refresh-all!))
   :rcf)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; get meas
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; under constrution
 ;; direct download from withings
+;; need users
+
+(def withings "https://wbsapi.withings.net/measure")
+
 (defn to-unix-time
   [datetime]
   (-> (sh "date" "-d" datetime "+%s")
@@ -104,48 +98,34 @@
       :out
       str/trim-newline))
 
-(comment
-  (def ut (to-unix-time "2022-12-20 00:00:00"))
-  (from-unix-time ut)
-  :rcf)
-
-(def users (fetch-users))
 (defn access-token [id users]
   (->> users
-       (filter #(= 51 (:id %)))
+       (filter #(= id (:id %)))
        first
        :access))
 
-(comment
-  (access-token 51 users)
-  )
-
-;; curl \
-;;   --header "Authorization: Bearer ${token}" \
-;;   --data "action=getmeas&lastupdate=1669849930" \
-;;   'https://wbsapi.withings.net/measure'
-
-(def withings "https://wbsapi.withings.net/measure")
-
 (defn withings-get-meas
   "users must be set before calling this function."
-  [id date users]
-  (let [token  (access-token id users)
+  [id date]
+  (let [;; users (refresh-all!)
+        token  (access-token id users)
         params (str "action=getmeas&lastupdate=" (to-unix-time date))]
-    (println "params " params)
+    ;; (println "params " params)
     (->
-     (curl/get withings {:raw-args ["-H" (str "Authorization: Bearer " token)
-                                    "-d" params]})
+     (curl/get withings
+               {:raw-args ["-H" (str "Authorization: Bearer " token)
+                           "-d" params]})
      :body
      (json/parse-string true)
-     (get-in [:body :measuregrps])
-     )))
+     (get-in [:body :measuregrps]))))
 
 (comment
-  (def ret (withings-get-meas 51 "2022-12-20 00:00:00" users))
+  (def from-september (withings-get-meas 51 "2022-09-01 00:00:00"))
+  (def from-descember (withings-get-meas 51 "2022-12-01 00:00:00"))
   :rcf)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; get meas
 ;; get via https://wc.kohhoh.jp
 (defn get-meas-with
   [params]
@@ -190,9 +170,6 @@
   (get-weight 27 "2022-12-01")
   (def record (get-meas-all 27 "2022-12-01")) ;; fixed at 0.15.5
   :rcf)
-
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; save meas
