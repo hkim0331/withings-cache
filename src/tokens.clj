@@ -1,4 +1,5 @@
 (ns tokens
+  "refresh tokens, set them on wc.kohhoh.jp mariadb database." 
   (:require
    [babashka.curl :as curl]
    [cheshire.core :as json]))
@@ -60,9 +61,9 @@
    (login-success?)
    (->> (filter :valid (fetch-users))
         (map :id)
-        (pmap refresh!))
+        #(doall (pmap refresh! %)))
    ;; FIXME: this returns old users.
-   #_(fetch-users)))
+   (fetch-users)))
 
 (comment
   (refresh-all!)
