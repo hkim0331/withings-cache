@@ -12,10 +12,11 @@
          :host     "localhost"
          :port     3306
          :dbname   "withings"
-         :user     "user"
-         :password "secret"})
+         :user     (System/getenv "MYSQL_USER")
+         :password (System/getenv "MYSQL_PASSWORD")})
 
-;;(def wc-url "localhost:3000")
+;; debug
+;;(def wc "http://localhost:3000")
 (def wc "https://wc.kohhoh.jp")
 (def cookie "cookie.txt")
 
@@ -33,7 +34,7 @@
                     :follow-redirects false})))
 
 (comment
-  (login)
+  (:status (login))
   :rcf)
 
 ;; short-hand functions
@@ -54,8 +55,8 @@
 
 (comment
   (def users (fetch-users))
+  users
   )
-
 ;; tokens
 (defn refresh!
   "Refresh user id's refresh token."
@@ -64,18 +65,13 @@
 
 (comment
   (refresh! 16)
-  ;; (refresh! 32)
+  (refresh! 51)
   :rcf)
 
-(defn refresh-all!
-  "Refresh all available user tokens."
-  []
-  (curl-post (str wc "/api/tokens/refresh-all")))
-
-(comment
-  ;; 32 山﨑悠翔 がリフレッシュできない。ひとまずオフ。
-  (refresh-all!)
-  :rcf)
+;; (defn refresh-all!
+;;   "Refresh all available user tokens."
+;;   []
+;;   (curl-post (str wc "/api/tokens/refresh-all")))
 
 ;; pmap でスピードアップ。
 (defn refresh-all-pmap!
@@ -85,24 +81,25 @@
        (pmap refresh!)))
 
 (comment
-  (refresh-all-pmap! users)
+  (refresh-all-pmap! (fetch-users))
   :rcf)
 
 ;; get meas
 (defn fetch-meas-with
   [params]
+  (println "fetch-meas-with" params)
   (-> (curl-post (str wc "/api/meas") "-d" params)
       :body
       (json/parse-string true)
       vec))
 
 (defn fetch-meas
-  ([id type d1]
-   (let [params (str "id=" id "&meastype=" type "&lastupdate=" d1)]
+  ([id type day1]
+   (let [params (str "id=" id "&meastype=" type "&lastupdate=" day1)]
      (fetch-meas-with params)))
-  ([id type d1 d2]
+  ([id type day1 day2]
    (let [params
-         (str "id=" id "&meastype=" type "&startdate=" d1 "&enddate=" d2)]
+         (str "id=" id "&meastype=" type "&startdate=" day1 "&enddate=" day2)]
      (fetch-meas-with params))))
 
 (defn fetch-weight
@@ -113,8 +110,30 @@
    (fetch-meas id 1 startdate enddate)))
 
 (comment
-  (fetch-weight 16 "2022-10-30")
+  (login)
+  (fetch-meas 27 "1,3,5" "2022-12-01") ;; 不適切な番号でもフェッチする。
   (fetch-weight 16 "2022-10-31" "2022-11-20")
+  :rcf)
+
+;; WITHINGS が間違い！
+;; meastypes ではなく、meastype
+;; meastypes=1,4,12 は invalid parameter error を起こす。
+;; meastype, meastypes に何も指定しなければ withings にある全部のデータを返す。
+;; 本当か？エラーになる。
+(defn fetch-meas-all
+  ([id day1]
+   (let [params (str "id=" id "&lastupdate=" day1)]
+     (fetch-meas-with params)))
+  ([id day1 day2]
+   (let [params (str "id=" id "&startdate=" day1 "&enddate=" day2)]
+     (fetch-meas-with params))))
+
+(comment
+  (login)
+  (fetch-weight 27 "2022-12-01")
+  (def record (fetch-meas-all 27 "2022-12-01")) ;; fixed at 0.15.5
+  record
+  (count record)
   :rcf)
 
 ;;;;;;;;;;;;;;
@@ -126,7 +145,7 @@
   (* value (pow 10 unit)))
 
 ;; FIXME: 複数の meas には対応していない。
-;; FIXME: must uniq same id, same created
+;; FIXME: must uniq agains (id, created)
 (defn save-one!
   [id {:keys [created measures]}]
   (let [meas (first measures) ;; <-
@@ -148,10 +167,10 @@
     (save-one! id mea)))
 
 (defn save-meas!
-  ([id type d1]
-   (save! id (fetch-meas id type d1)))
-  ([id type d1 d2]
-   (save! id (fetch-meas id type d1 d2))))
+  ([id type day1]
+   (save! id (fetch-meas id type day1)))
+  ([id type day1 day2]
+   (save! id (fetch-meas id type day1 day2))))
 
 (defn save-weight!
   ([id lastupdate]
@@ -161,17 +180,22 @@
 
 (comment
   (save-weight! 16 "2022-09-01")
-  )
+  :rcf)
 
 (defn init-db
-  [date]
+  ""
+  [last-update]
   (let [users (filter :valid (fetch-users))]
     (refresh-all-pmap! users)
     (doseq [{:keys [id]} users]
       (println id)
-      (save-weight! id date))))
+      ;; should change to `save-multi!`
+      (save-weight! id last-update))))
 
-(init-db "2022-09-01")
+(comment
+  (init-db "2022-09-01")
+  :rcf)
+
 ;; 48
 ;; 32
 ;; 17
