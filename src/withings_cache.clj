@@ -1,10 +1,11 @@
-#!/usr/bin/env bb
 (ns src.withings-cache
   (:require
    [babashka.curl :as curl]
    [babashka.pods :as pods]
    [cheshire.core :as json]
-   [clojure.math  :refer [pow]]))
+   [clojure.java.shell :refer [sh]]
+   [clojure.math  :refer [pow]]
+   [clojure.string :as str]))
 
 (pods/load-pod 'org.babashka/mysql "0.1.1")
 (require '[pod.babashka.mysql :as mysql])
@@ -15,15 +16,13 @@
          :user     (System/getenv "MYSQL_USER")
          :password (System/getenv "MYSQL_PASSWORD")})
 
-;; debug
-;;(def wc "http://localhost:3000")
 (def wc "https://wc.kohhoh.jp")
 (def cookie "cookie.txt")
 
-;; withing-client
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; authentication
 (defn login
   "login. if success, updates cookie and returns 302."
@@ -33,11 +32,15 @@
     (curl/post api {:raw-args ["-c" cookie "-d" params]
                     :follow-redirects false})))
 
-(comment
-  (:status (login))
-  :rcf)
+(defn login-success?
+  []
+  (= 302 (:status (login))))
+
+;; `fetch-users` requires login.
+(login-success?)
 
 ;; short-hand functions
+;; conversations to wc.kohhoh.jp require cookie.
 (defn curl-get [url & params]
   (curl/get url {:raw-args (vec (concat ["-b" cookie] params))}))
 
@@ -66,64 +69,76 @@
   [id]
   (curl-post (str wc "/api/token/" id "/refresh")))
 
-(comment
-  (refresh! 16)
-  (refresh! 51)
-  :rcf)
-
 ;; pmap でスピードアップ。
 (defn refresh-all!
-  "use old users map internaly,
-   returns refreshed user map."
+  "use old users map internaly, returns refreshed user map.
+   becore fetch-users, login is required."
   []
-  (->> (filter :valid (fetch-users))
-       (map :id)
-       (pmap refresh!))
-  (fetch-users))
+  (and
+   (login-success?)
+   (->> (filter :valid (fetch-users))
+        (map :id)
+        (pmap refresh!))
+   ;; FIXME: this returns old users.
+   #_(fetch-users)))
 
 (comment
-  (refresh-all!)
+  (def users (refresh-all!))
   :rcf)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; get meas
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; under constrution
 ;; direct download from withings
+;; need users
+(def withings "https://wbsapi.withings.net/measure")
+
 (defn to-unix-time
   [datetime]
-  (:out (shell/sh "date" "-d" datetime "+%s")))
+  (-> (sh "date" "-d" datetime "+%s")
+      :out
+      str/trim-newline))
 
-(def users (fetch-users))
+(defn from-unix-time
+  [n]
+  (-> (sh "date" "-d" (str "@" n) "+%Y/%m/%d %T")
+      :out
+      str/trim-newline))
+
 (defn access-token [id users]
   (->> users
-       (filter #(= 51 (:id %)))
+       (filter #(= id (:id %)))
        first
        :access))
-
-(comment
-  (access-token 51 users)
-  )
-
-
-
-;; curl \
-;;   --header "Authorization: Bearer ${token}" \
-;;   --data "action=getmeas&lastupdate=1669849930" \
-;;   'https://wbsapi.withings.net/measure'
-
-(def withings "https://wbsapi.withings.net/measure")
 
 (defn withings-get-meas
   "users must be set before calling this function."
   [id date users]
-  (let [token (access-token id users)
-        params (str "action=getmeas&lastdate=" (to-unix-time date))]
-    (curl/get withings {:raw-args ["-d" params]})))
+  (let [token  (access-token id users)
+        params (str "action=getmeas&lastupdate=" (to-unix-time date))]
+    (println "id:" id)
+    (println "access token:" token)
+    (println "params:" params)
+    (->
+     (curl/get withings
+               {:raw-args ["-H" (str "Authorization: Bearer " token)
+                           "-d" params]})
+     :body
+     (json/parse-string true)
+     (get-in [:body :measuregrps]))))
 
+(defn withings-test
+  []
+  (let [_ (refresh-all!)
+        users (fetch-users)]
+    [(withings-get-meas 51 "2022-09-01 00:00:00" users)
+     (withings-get-meas 51 "2022-12-20 00:00:00" users)]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(comment
+  (def ret (withings-test))
+  :rcf)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; get meas
 ;; get via https://wc.kohhoh.jp
 (defn get-meas-with
   [params]
@@ -167,11 +182,7 @@
   (def users (refresh-all!))
   (get-weight 27 "2022-12-01")
   (def record (get-meas-all 27 "2022-12-01")) ;; fixed at 0.15.5
-  (withing-get-meas 27 "2022-12-01" users)
   :rcf)
-
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; save meas
