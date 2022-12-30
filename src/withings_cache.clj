@@ -1,9 +1,9 @@
-#!/usr/bin/env bb
 (ns src.withings-cache
   (:require
    [babashka.curl :as curl]
    [babashka.pods :as pods]
    [cheshire.core :as json]
+   [clojure.java.shell :refer [sh]]
    [clojure.math  :refer [pow]]))
 
 (pods/load-pod 'org.babashka/mysql "0.1.1")
@@ -93,7 +93,11 @@
 ;; direct download from withings
 (defn to-unix-time
   [datetime]
-  (:out (shell/sh "date" "-d" datetime "+%s")))
+  (:out (sh "date" "-d" datetime "+%s")))
+
+(comment
+  (to-unix-time "2022-12-20 12:34:56")
+  :rcf)
 
 (def users (fetch-users))
 (defn access-token [id users]
@@ -106,22 +110,22 @@
   (access-token 51 users)
   )
 
-
-
 ;; curl \
 ;;   --header "Authorization: Bearer ${token}" \
 ;;   --data "action=getmeas&lastupdate=1669849930" \
 ;;   'https://wbsapi.withings.net/measure'
 
-(def withings "https://wbsapi.withings.net/measure")
+(def withings "https://wbsapi.withings.net/measure")case
 
 (defn withings-get-meas
   "users must be set before calling this function."
   [id date users]
   (let [token (access-token id users)
         params (str "action=getmeas&lastdate=" (to-unix-time date))]
-    (curl/get withings {:raw-args ["-d" params]})))
+    (curl/get withings {:raw-args ["-H" (str "Authorization: Bearer " token)
+                                   "-d" params]})))
 
+(withings-get-meas 51 "2022-12-01" users)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; get via https://wc.kohhoh.jp
