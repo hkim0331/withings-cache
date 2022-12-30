@@ -7,8 +7,11 @@
 - should be unique against same id and same created time. how?
 - hyperfiddle.rcf
 
-## 0.4.9-SNAPSHOT
-- withings returns all data when do not provide both meastype and meastypes.
+## 0.5.0-SNAPSHOT
+### Refactor
+
+## 0.4.9 - 2022-12-30
+- withings returns all data when do not provide both meastype and meastypes. This was not described in WITHINGS's document.
 
 ## 0.3.8 - 2022-12-19
 - (filter :valid (fetch-users)) でフィルタしたユーザで、
