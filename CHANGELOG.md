@@ -9,6 +9,9 @@
 - require java.time fails in babashka.
 - 日付の扱いが。
 
+## 0.6.12-SNAPSHOT
+- git rm --cache curl.sh, which included Bearer token.
+
 ## 0.5.11 - 2022-12-30
 - defined withings-test.
 
