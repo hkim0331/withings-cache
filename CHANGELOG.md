@@ -8,6 +8,7 @@
 - hyperfiddle.rcf
 
 ## 0.4.9-SNAPSHOT
+- withings returns all data when do not provide both meastype and meastypes.
 
 ## 0.3.8 - 2022-12-19
 - (filter :valid (fetch-users)) でフィルタしたユーザで、

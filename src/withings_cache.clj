@@ -6,7 +6,6 @@
    [cheshire.core :as json]
    [clojure.math  :refer [pow]]))
 
-
 (pods/load-pod 'org.babashka/mysql "0.1.1")
 (require '[pod.babashka.mysql :as mysql])
 (def db {:dbtype   "mysql"
@@ -16,7 +15,8 @@
          :user     (System/getenv "MYSQL_USER")
          :password (System/getenv "MYSQL_PASSWORD")})
 
-;;(def wc-url "localhost:3000")
+;; debug
+;;(def wc "http://localhost:3000")
 (def wc "https://wc.kohhoh.jp")
 (def cookie "cookie.txt")
 
@@ -55,8 +55,8 @@
 
 (comment
   (def users (fetch-users))
+  users
   )
-
 ;; tokens
 (defn refresh!
   "Refresh user id's refresh token."
@@ -87,6 +87,7 @@
 ;; get meas
 (defn fetch-meas-with
   [params]
+  (println "fetch-meas-with" params)
   (-> (curl-post (str wc "/api/meas") "-d" params)
       :body
       (json/parse-string true)
@@ -109,8 +110,30 @@
    (fetch-meas id 1 startdate enddate)))
 
 (comment
-  (fetch-weight 16 "2022-10-30")
+  (login)
+  (fetch-meas 27 "1,3,5" "2022-12-01") ;; 不適切な番号でもフェッチする。
   (fetch-weight 16 "2022-10-31" "2022-11-20")
+  :rcf)
+
+;; WITHINGS が間違い！
+;; meastypes ではなく、meastype
+;; meastypes=1,4,12 は invalid parameter error を起こす。
+;; meastype, meastypes に何も指定しなければ withings にある全部のデータを返す。
+;; 本当か？エラーになる。
+(defn fetch-meas-all
+  ([id day1]
+   (let [params (str "id=" id "&lastupdate=" day1)]
+     (fetch-meas-with params)))
+  ([id day1 day2]
+   (let [params (str "id=" id "&startdate=" day1 "&enddate=" day2)]
+     (fetch-meas-with params))))
+
+(comment
+  (login)
+  (fetch-weight 27 "2022-12-01")
+  (def record (fetch-meas-all 27 "2022-12-01")) ;; fixed at 0.15.5
+  record
+  (count record)
   :rcf)
 
 ;;;;;;;;;;;;;;
