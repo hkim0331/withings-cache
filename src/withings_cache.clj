@@ -1,4 +1,4 @@
-(ns src.withings-cache
+(ns withings-cache
   (:require
    [babashka.curl :as curl]
    [babashka.pods :as pods]

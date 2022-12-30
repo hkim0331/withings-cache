@@ -1,4 +1,4 @@
-(ns src.tokens
+(ns tokens
   (:require
    [babashka.curl :as curl]
    [cheshire.core :as json]))
