@@ -32,8 +32,12 @@
     (curl/post api {:raw-args ["-c" cookie "-d" params]
                     :follow-redirects false})))
 
+(defn login-success?
+  []
+  (= 302 (:status (login))))
+
 ;; `fetch-users` requires login.
-(login)
+(login-success?)
 
 ;; short-hand functions
 ;; conversations to wc.kohhoh.jp require cookie.
@@ -70,10 +74,13 @@
   "use old users map internaly, returns refreshed user map.
    becore fetch-users, login is required."
   []
-  (->> (filter :valid (fetch-users))
-       (map :id)
-       (pmap refresh!))
-  (fetch-users))
+  (and
+   (login-success?)
+   (->> (filter :valid (fetch-users))
+        (map :id)
+        (pmap refresh!))
+   ;; FIXME: this returns old users.
+   #_(fetch-users)))
 
 (comment
   (def users (refresh-all!))
@@ -83,7 +90,6 @@
 ;; get meas
 ;; direct download from withings
 ;; need users
-
 (def withings "https://wbsapi.withings.net/measure")
 
 (defn to-unix-time
@@ -106,11 +112,12 @@
 
 (defn withings-get-meas
   "users must be set before calling this function."
-  [id date]
-  (let [;; users (refresh-all!)
-        token  (access-token id users)
+  [id date users]
+  (let [token  (access-token id users)
         params (str "action=getmeas&lastupdate=" (to-unix-time date))]
-    ;; (println "params " params)
+    (println "id:" id)
+    (println "access token:" token)
+    (println "params:" params)
     (->
      (curl/get withings
                {:raw-args ["-H" (str "Authorization: Bearer " token)
@@ -119,9 +126,15 @@
      (json/parse-string true)
      (get-in [:body :measuregrps]))))
 
+(defn withings-test
+  []
+  (let [_ (refresh-all!)
+        users (fetch-users)]
+    [(withings-get-meas 51 "2022-09-01 00:00:00" users)
+     (withings-get-meas 51 "2022-12-20 00:00:00" users)]))
+
 (comment
-  (def from-september (withings-get-meas 51 "2022-09-01 00:00:00"))
-  (def from-descember (withings-get-meas 51 "2022-12-01 00:00:00"))
+  (def ret (withings-test))
   :rcf)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
