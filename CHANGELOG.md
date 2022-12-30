@@ -1,14 +1,26 @@
 # withings-cache
 
 ## Unreleased
-- task
-- meas
-- when doing in kyutech, it takes longer time rather than in home. why?
+- use babashka task?
+- when doing in kyutech, it takes longer time rather than in home.
 - should be unique against same id and same created time. how?
 - hyperfiddle.rcf
+- direct downloading from withings. access tokens should be from wc.kohhoh.
+- require java.time fails in babashka.
+- 日付の扱いが。
 
-## 0.5.0-SNAPSHOT
+## 0.5.11 - 2022-12-30
+- defined withings-test.
+
+## 0.5.1 - 2022-12-30
+### Fix typo(bug)
+- lastupdate for lastdate
+### Changed
+- refresh-all! calls fetch-users internally.
+
+## 0.5.0 - 2022-12-30
 ### Refactor
+- `fetch-*` to `get-*` according to WITHINGS terminology.
 
 ## 0.4.9 - 2022-12-30
 - withings returns all data when do not provide both meastype and meastypes. This was not described in WITHINGS's document.

@@ -1,4 +1,1 @@
-{:paths ["src"]
- ;; work with bb? 2022-12-29
- ;; :deps {com.hyperfiddle/rcf {:mvn/version "20220926-202227"}}
- }
+{:paths ["src"]}
