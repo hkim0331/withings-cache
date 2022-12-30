@@ -23,4 +23,9 @@
 #     {"value":29599998,"type":77,"unit":-6,"algo":0,"fm":131,"apppfmid":9},
 #     {"value":2200000,"type":88,"unit":-6,"algo":0,"fm":131,"apppfmid":9}]
 
-curl --header "Authorization: Bearer 3c4bf457c300f827755f7b488a5d26cf14761ecd" --data "action=getmeas&lastupdate=1669849930" 'https://wbsapi.withings.net/measure'
+# use 近藤's token. must without quotation marks.
+token=61e22f2ab568f304b4791e498484291479d4b085
+curl \
+  --header "Authorization: Bearer ${token}" \
+  --data "action=getmeas&lastupdate=1669849930" \
+  'https://wbsapi.withings.net/measure' | jq

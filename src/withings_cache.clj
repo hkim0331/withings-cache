@@ -44,9 +44,11 @@
 (defn curl-post [url & params]
   (curl/post url {:raw-args (vec (concat ["-b" cookie] params))}))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; users
 (defn fetch-users
-  "fetch users via withing-client, return the user json"
+  "fetch users via withing-client,
+   return the users data in json format."
   []
   (-> (curl-get (str wc "/api/users"))
       :body
@@ -54,9 +56,10 @@
       vec))
 
 (comment
-  (def users (fetch-users))
-  users
-  )
+  (fetch-users)
+  :rcf)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; tokens
 (defn refresh!
   "Refresh user id's refresh token."
@@ -68,23 +71,60 @@
   (refresh! 51)
   :rcf)
 
-;; (defn refresh-all!
-;;   "Refresh all available user tokens."
-;;   []
-;;   (curl-post (str wc "/api/tokens/refresh-all")))
-
 ;; pmap でスピードアップ。
-(defn refresh-all-pmap!
-  [users]
-  (->> (filter :valid users)
+(defn refresh-all!
+  "use old users map internaly,
+   returns refreshed user map."
+  []
+  (->> (filter :valid (fetch-users))
        (map :id)
-       (pmap refresh!)))
+       (pmap refresh!))
+  (fetch-users))
 
 (comment
-  (refresh-all-pmap! (fetch-users))
+  (refresh-all!)
   :rcf)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; get meas
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; under constrution
+;; direct download from withings
+(defn to-unix-time
+  [datetime]
+  (:out (shell/sh "date" "-d" datetime "+%s")))
+
+(def users (fetch-users))
+(defn access-token [id users]
+  (->> users
+       (filter #(= 51 (:id %)))
+       first
+       :access))
+
+(comment
+  (access-token 51 users)
+  )
+
+
+
+;; curl \
+;;   --header "Authorization: Bearer ${token}" \
+;;   --data "action=getmeas&lastupdate=1669849930" \
+;;   'https://wbsapi.withings.net/measure'
+
+(def withings "https://wbsapi.withings.net/measure")
+
+(defn withings-get-meas
+  "users must be set before calling this function."
+  [id date users]
+  (let [token (access-token id users)
+        params (str "action=getmeas&lastdate=" (to-unix-time date))]
+    (curl/get withings {:raw-args ["-d" params]})))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; get via https://wc.kohhoh.jp
 (defn get-meas-with
   [params]
   (println "get-meas-with" params)
@@ -109,12 +149,6 @@
   ([id startdate enddate]
    (get-meas id 1 startdate enddate)))
 
-(comment
-  (login)
-  (get-meas 27 "1,3,5" "2022-12-01") ;; 不適切な番号でもフェッチする。
-  (get-weight 16 "2022-10-31" "2022-11-20")
-  :rcf)
-
 ;; WITHINGS が間違い！
 ;; meastypes ではなく、meastype
 ;; meastypes=1,4,12 は invalid parameter error を起こす。
@@ -130,22 +164,23 @@
 
 (comment
   (login)
+  (def users (refresh-all!))
   (get-weight 27 "2022-12-01")
   (def record (get-meas-all 27 "2022-12-01")) ;; fixed at 0.15.5
-  record
-  (count record)
+  (withing-get-meas 27 "2022-12-01" users)
   :rcf)
 
-;;;;;;;;;;;;;;
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; save meas
 ;; FIXME: meas->float returns 93.60000000000001
 (defn meas->float
-  [{:keys [value unit] :as params}]
-  ;; (println value unit params)
+  [{:keys [value unit]}]
   (* value (pow 10 unit)))
 
-;; FIXME: 複数の meas には対応していない。
-;; FIXME: must uniq agains (id, created)
+;; FIXME: must uniq against (id, created)
 (defn save-one!
   [id {:keys [created measures]}]
   (let [meas (first measures) ;; <-
@@ -185,8 +220,7 @@
 (defn init-db-weight
   "init by weights data."
   [last-update]
-  (let [users (filter :valid (fetch-users))]
-    (refresh-all-pmap! users)
+  (let [users (refresh-all!)]
     (doseq [{:keys [id]} users]
       (println id)
       ;; should change to `save-multi!`
@@ -195,9 +229,3 @@
 (comment
   (init-db-weight "2022-09-01")
   :rcf)
-
-;; 48
-;; 32
-;; 17
-;; ; clojure.lang.ExceptionInfo: babashka.curl: status 400 src.withings-cache /Volumes/RAM_DISK/withings-cache/src/withings_cache.clj:44:3
-;; ; Evaluation of file withings_cache.clj failed: class clojure.lang.ExceptionInfo

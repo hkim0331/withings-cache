@@ -1,4 +1,6 @@
 {:paths ["src"]
- ;; work with bb? 2022-12-29
- ;; :deps {com.hyperfiddle/rcf {:mvn/version "20220926-202227"}}
- }
+;;  :deps {
+;;         clojure.java-time/clojure.java-time {:mvn/version "1.1.0"}
+;;         com.hyperfiddle/rcf {:mvn/version "20220926-202227"}
+;;         }
+}
