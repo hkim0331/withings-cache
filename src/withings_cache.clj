@@ -85,34 +85,34 @@
   :rcf)
 
 ;; get meas
-(defn fetch-meas-with
+(defn get-meas-with
   [params]
-  (println "fetch-meas-with" params)
+  (println "get-meas-with" params)
   (-> (curl-post (str wc "/api/meas") "-d" params)
       :body
       (json/parse-string true)
       vec))
 
-(defn fetch-meas
+(defn get-meas
   ([id type day1]
    (let [params (str "id=" id "&meastype=" type "&lastupdate=" day1)]
-     (fetch-meas-with params)))
+     (get-meas-with params)))
   ([id type day1 day2]
    (let [params
          (str "id=" id "&meastype=" type "&startdate=" day1 "&enddate=" day2)]
-     (fetch-meas-with params))))
+     (get-meas-with params))))
 
-(defn fetch-weight
+(defn get-weight
   "weight: meastype=1"
   ([id lastupdate]
-   (fetch-meas id 1 lastupdate))
+   (get-meas id 1 lastupdate))
   ([id startdate enddate]
-   (fetch-meas id 1 startdate enddate)))
+   (get-meas id 1 startdate enddate)))
 
 (comment
   (login)
-  (fetch-meas 27 "1,3,5" "2022-12-01") ;; 不適切な番号でもフェッチする。
-  (fetch-weight 16 "2022-10-31" "2022-11-20")
+  (get-meas 27 "1,3,5" "2022-12-01") ;; 不適切な番号でもフェッチする。
+  (get-weight 16 "2022-10-31" "2022-11-20")
   :rcf)
 
 ;; WITHINGS が間違い！
@@ -120,18 +120,18 @@
 ;; meastypes=1,4,12 は invalid parameter error を起こす。
 ;; meastype, meastypes に何も指定しなければ withings にある全部のデータを返す。
 ;; 本当か？エラーになる。
-(defn fetch-meas-all
+(defn get-meas-all
   ([id day1]
    (let [params (str "id=" id "&lastupdate=" day1)]
-     (fetch-meas-with params)))
+     (get-meas-with params)))
   ([id day1 day2]
    (let [params (str "id=" id "&startdate=" day1 "&enddate=" day2)]
-     (fetch-meas-with params))))
+     (get-meas-with params))))
 
 (comment
   (login)
-  (fetch-weight 27 "2022-12-01")
-  (def record (fetch-meas-all 27 "2022-12-01")) ;; fixed at 0.15.5
+  (get-weight 27 "2022-12-01")
+  (def record (get-meas-all 27 "2022-12-01")) ;; fixed at 0.15.5
   record
   (count record)
   :rcf)
@@ -168,9 +168,9 @@
 
 (defn save-meas!
   ([id type day1]
-   (save! id (fetch-meas id type day1)))
+   (save! id (get-meas id type day1)))
   ([id type day1 day2]
-   (save! id (fetch-meas id type day1 day2))))
+   (save! id (get-meas id type day1 day2))))
 
 (defn save-weight!
   ([id lastupdate]
@@ -182,8 +182,8 @@
   (save-weight! 16 "2022-09-01")
   :rcf)
 
-(defn init-db
-  ""
+(defn init-db-weight
+  "init by weights data."
   [last-update]
   (let [users (filter :valid (fetch-users))]
     (refresh-all-pmap! users)
@@ -193,7 +193,7 @@
       (save-weight! id last-update))))
 
 (comment
-  (init-db "2022-09-01")
+  (init-db-weight "2022-09-01")
   :rcf)
 
 ;; 48
