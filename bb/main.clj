@@ -1,4 +1,4 @@
-(ns withings-cache
+(ns main
   (:require
    [babashka.curl :as curl]
    [babashka.pods :as pods]
@@ -199,11 +199,7 @@
   ; clojure.lang.ExceptionInfo: babashka.curl: status 400 withings-cache /Users/hkim/clojure/withings-cache/src/withings_cache.clj:34:3
   :rcf)
 
-(defn init-db
+(defn -main
   []
   (delete-all!)
-  (get-meas-all "2022-09-01"))
-
-(comment
-  (init-db)
-  :rcf)
+  (get-meas-all "2022-12-20"))

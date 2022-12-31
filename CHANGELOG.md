@@ -8,6 +8,13 @@
 - direct downloading from withings. access tokens should be from wc.kohhoh.
 - require java.time fails in babashka.
 
+## 0.7.0-SNAPSHOT
+- changed project layout.
+  src/withings_client.clj => bb/main.clj
+  launch from withing-cache diretory by;
+```
+% bb -m main
+``
 
 ## 0.6.14 - 2022-12-31
 - defined init-db.
