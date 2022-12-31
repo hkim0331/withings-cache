@@ -8,6 +8,12 @@
 - direct downloading from withings. access tokens should be from wc.kohhoh.
 - require java.time fails in babashka.
 
+
+## 0.7.18 - 2022-12-31
+- defined `update-meas-today`.
+  need str/trim-newline to use the output of `date +%F` as arguments.
+- init-db is not the -main. update-today is it.
+
 ## 0.7.17 - 2022-12-31
 - log/debug
 - renamed `get-meas-all` to `get-save-meas-all`.

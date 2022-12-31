@@ -228,13 +228,21 @@
   (delete-meas-since date)
   (get-save-meas-all date))
 
+(defn update-meas-today
+  "updating today's meas."
+  []
+  (let [today (str/trim-newline(:out (sh "date" "+%F")))]
+    (log/debug "update-meas-today today:" today)
+    (update-meas-since today)))
+
 (comment
   (delete-meas-since "2022-12-20")
   (update-meas-since "2022-12-20")
+  (update-meas-today)
   :rcf)
 
 (defn -main
   [& args]
   (if (nil? args)
-    (println "yyyy-mm-dd parameter mandatory")
+    (update-meas-today)
     (update-meas-since (first args))))
