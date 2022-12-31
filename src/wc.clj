@@ -3,7 +3,7 @@
   (:require
    [babashka.curl :as curl]
    [cheshire.core :as json]
-   [tokens :refer [login-success? refresh-all!]]))
+   [tokens :refer [login refresh-all!]]))
 
 (def wc "https://wc.kohhoh.jp")
 (def cookie "cookie.txt")
@@ -49,10 +49,8 @@
    (let [params (str "id=" id "&startdate=" day1 "&enddate=" day2)]
      (get-meas-with params))))
 
-(defn get-meas-test
+(defn get-meas-one-test
   []
-  (login-success?)
+  (login)
   (refresh-all!)
   (get-meas-one 51 "2022-12-10"))
-
-(get-meas-test)

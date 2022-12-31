@@ -1,16 +1,16 @@
-(ns withings
+(ns directly-withings
   "directry fetch meas from withings"
   (:require
    [babashka.curl :as curl]
    [cheshire.core :as json]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
-   [src.tokens :refer [login refresh-all! fetch-users]]))
+   [tokens :refer [login refresh-all! fetch-users]]))
 
 (def withings "https://wbsapi.withings.net/measure")
-(if (login)
-  (refresh-all!)
-  (println "can not login"))
+;; (if (login)
+;;   (refresh-all!)
+;;   (println "can not login"))
 
 (defn to-unix-time
   [datetime]

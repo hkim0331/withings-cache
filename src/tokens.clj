@@ -1,5 +1,5 @@
 (ns tokens
-  "refresh tokens, set them on wc.kohhoh.jp mariadb database." 
+  "refresh tokens, set them on wc.kohhoh.jp mariadb database."
   (:require
    [babashka.curl :as curl]
    [cheshire.core :as json]))
@@ -50,6 +50,7 @@
 (defn refresh!
   "Refresh user id's refresh token."
   [id]
+  ;; (println "refresh!" id)
   (curl-post (str wc "/api/token/" id "/refresh")))
 
 ;; pmap でスピードアップ。
@@ -57,15 +58,12 @@
   "use old users map internaly, returns refreshed user map.
    becore fetch-users, login is required."
   []
-  (and
-   (login-success?)
-   (->> (filter :valid (fetch-users))
-        (map :id)
-        #(doall (pmap refresh! %)))
-   ;; FIXME: this returns old users.
-   (fetch-users)))
+  (->> (filter :valid (fetch-users))
+       (map :id)
+       (pmap refresh!)))
 
 (comment
+  (login)
   (refresh-all!)
   (reset! users (fetch-users))
   (->> @users
