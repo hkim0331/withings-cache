@@ -1,15 +1,16 @@
-(ns withings
+(ns directly-withings
+  "directry fetch meas from withings"
   (:require
    [babashka.curl :as curl]
    [cheshire.core :as json]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
-   [src.tokens :refer [login refresh-all! fetch-users]]))
+   [tokens :refer [login refresh-all! fetch-users]]))
 
 (def withings "https://wbsapi.withings.net/measure")
-(if (login)
-  (refresh-all!)
-  (println "can not login"))
+;; (if (login)
+;;   (refresh-all!)
+;;   (println "can not login"))
 
 (defn to-unix-time
   [datetime]
@@ -29,7 +30,7 @@
        first
        :access))
 
-(defn get-meas
+(defn get-meas-one
   "users must be set before calling this function."
   [id date]
   (let [token  (access-token id)
@@ -50,10 +51,9 @@
 (defn get-meas-test []
   (login)
   (refresh-all!)
-  (access-token 51)
-  [(get-meas 51 "2022-09-01 00:00:00")
-   (get-meas 51 "2022-12-20 00:00:00")])
+  (get-meas-one 51 "2022-12-10 00:00:00"))
 
 (comment
+  ;; returns nil
   (get-meas-test)
   :rcf)

@@ -7,10 +7,12 @@
 - hyperfiddle.rcf
 - direct downloading from withings. access tokens should be from wc.kohhoh.
 - require java.time fails in babashka.
-- 日付の扱いが。
+
 
 ## 0.6.12-SNAPSHOT
 - git rm --cache curl.sh, which included Bearer token.
+- namespace に分けない方が利用（配布、呼び出し）しやすいか？
+- from-unix-time, to-unix-time using `date` command.
 
 ## 0.5.11 - 2022-12-30
 - defined withings-test.

@@ -1,8 +1,9 @@
 (ns wc
+  "fetch meas via https://wc.kohhoh.jp"
   (:require
    [babashka.curl :as curl]
    [cheshire.core :as json]
-   [tokens :refer [login-success? refresh-all!]]))
+   [tokens :refer [login refresh-all!]]))
 
 (def wc "https://wc.kohhoh.jp")
 (def cookie "cookie.txt")
@@ -35,13 +36,6 @@
          (str "id=" id "&meastype=" type "&startdate=" day1 "&enddate=" day2)]
      (get-meas-with params))))
 
-;; (defn get-weight
-;;   "weight: meastype=1"
-;;   ([id lastupdate]
-;;    (get-meas id 1 lastupdate))
-;;   ([id startdate enddate]
-;;    (get-meas id 1 startdate enddate)))
-
 ;; WITHINGS が間違い！
 ;; meastypes ではなく、meastype
 ;; meastypes=1,4,12 は invalid parameter error を起こす。
@@ -55,9 +49,8 @@
    (let [params (str "id=" id "&startdate=" day1 "&enddate=" day2)]
      (get-meas-with params))))
 
-(comment
-  (login-success?)
+(defn get-meas-one-test
+  []
+  (login)
   (refresh-all!)
-  ;;(get-weight 51 "2022-12-01")
-  (get-meas-one 51 "2022-12-01")
-  :rcf)
+  (get-meas-one 51 "2022-12-10"))

@@ -6,8 +6,7 @@
    [clojure.java.shell :refer [sh]]
    [clojure.math  :refer [pow]]
    [clojure.string :as str]
-   [tokens :refer [refresh-all!]]
-   [wc]))
+   ))
 
 (pods/load-pod 'org.babashka/mysql "0.1.1")
 (require '[pod.babashka.mysql :as mysql])
