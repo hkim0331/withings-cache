@@ -199,7 +199,10 @@
   ; clojure.lang.ExceptionInfo: babashka.curl: status 400 withings-cache /Users/hkim/clojure/withings-cache/src/withings_cache.clj:34:3
   :rcf)
 
+;; % bb -m main
 (defn -main
-  []
+  [& args]
   (delete-all!)
-  (get-meas-all "2022-12-20"))
+  (if (nil? args)
+    (get-meas-all "2022-09-01")
+    (get-meas-all (first args))))
