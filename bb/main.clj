@@ -5,6 +5,7 @@
    [clojure.java.shell :refer [sh]]
    [clojure.math :refer [pow]]
    [clojure.string :as str]
+   [clojure.tools.logging :as log]
    [cheshire.core :as json]))
 
 ;;;
@@ -65,7 +66,7 @@
 (defn refresh!
   "Refresh user id's refresh token."
   [id]
-  ;; (println "refresh!" id)
+  ;; (log/debug "refresh!" id)
   (curl-post (str wc "/api/token/" id "/refresh")))
 
 ;; pmap でスピードアップ。
@@ -122,9 +123,9 @@
    measures: [{:value 54600, :type 1, :unit -3, ...}
               {:value 1100, :type 8, :unit -2, ...} ..]"
   [id date measures]
-  (println "save-meas-one! id:" id "date:" date)
+  (log/debug "save-meas-one! id:" id "date:" date)
   (doseq [{:keys [type] :as meas} measures]
-    (println "  type:" type "float value =>" (meas->float meas))
+    (log/debug "  type:" type "float value =>" (meas->float meas))
     (mysql/execute!
      db
      ["insert into meas
@@ -137,7 +138,7 @@
 
 (defn save-meas!
   [id data]
-  (println "save-meas! id:" id)
+  (log/debug "save-meas! id:" id)
   (doseq [d data]
     (save-meas-one! id (:created d) (:measures d))))
 
@@ -151,7 +152,7 @@
 ;; over version exists. `directry_withings.clj`.
 (defn get-meas-with
   [params]
-  (println "get-meas-with" params)
+  (log/debug "get-meas-with" params)
   (-> (curl-post (str wc "/api/meas") "-d" params)
       :body
       (json/parse-string true)

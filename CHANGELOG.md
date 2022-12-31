@@ -8,6 +8,9 @@
 - direct downloading from withings. access tokens should be from wc.kohhoh.
 - require java.time fails in babashka.
 
+## 0.7.17-SNAPSHOT
+- log/debug
+
 ## 0.7.16 - 2022-12-31
 - added Makefile and migrations/README.md
 - worked on wc.kohhoh.jp
