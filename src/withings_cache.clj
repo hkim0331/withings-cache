@@ -42,18 +42,22 @@
         params (str "login=" admin "&password=" password)]
     (curl/post api {:raw-args ["-c" cookie "-d" params]
                     :follow-redirects false})))
-
 (defn fetch-users
   "fetch users via withing-client,
-   return the users data in json format."
-  []
-  (-> (curl-get (str wc "/api/users"))
-      :body
-      (json/parse-string true)
-      vec))
+   return the users data in json format.
+   (fetch-users true) returns only valid users."
+  [& valid?]
+  (let [ret (-> (curl-get (str wc "/api/users"))
+                :body
+                (json/parse-string true)
+                vec)]
+    (if valid?
+      (filter :valid ret)
+      ret)))
 
 (comment
   (reset! users (fetch-users))
+  (reset! users (fetch-users true))
   :rcf)
 
 (defn refresh!
@@ -86,7 +90,7 @@
   [id]
   (login)
   (refresh-all!)
-  (reset! users (fetch-users))
+  (reset! users (fetch-users true))
   (access-code id))
 
 (comment
@@ -95,14 +99,16 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; save meas
+(defn save-meas-one! [id date measures]
+  (println "save-meas-one! id:" id)
+  (println "  created:" date)
+  (println "  measures:" measures))
 
-;; under construction
 (defn save-meas!
   [id data]
   (println "save-meas! id:" id)
   (doseq [d data]
-    (println "  created:" (from-unix-time (:created d)))
-    (println "  measures:" (:measures d))))
+    (save-meas-one! id (:created d) (:measures d))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; get meas
@@ -131,7 +137,8 @@
 ;; meastypes=1,4,12 は invalid parameter error を起こす。
 ;; meastype, meastypes に何も指定しなければ withings にある全部のデータを返す。
 ;; 本当か？
-;; day1, day2 は wc が unix time に直すので、2022-12-20 形式で渡す。
+;; day1, day2 は wc が unix time に直すので、"2022-12-20" 形式で渡す。
+;; FIXME: id が存在しないユーザであれば nil を返してよい。
 (defn get-meas-one
   ([id day1]
    (let [params (str "id=" id "&lastupdate=" day1)]
@@ -144,6 +151,8 @@
   (login)
   (refresh-all!)
   (get-meas-one 51 "2022-12-20")
+  ;; 
+  (get-meas-one 17 "2022-12-01")
   :rcf)
 
 ;; function name init-db?
@@ -151,12 +160,14 @@
   [date]
   (login)
   (refresh-all!)
-  (reset! users (fetch-users))
+  ;; should valid users only
+  (reset! users (fetch-users true))
   (doseq [{:keys [id]} @users]
     (save-meas! id (get-meas-one id date))))
 
 (comment
-  (save-meas! 51 (get-meas-one 51 "2022-12-01"))
-  (get-meas-all "2022-12-01")
-  ; clojure.lang.ExceptionInfo: babashka.curl: status 400 withings-cache /Users/hkim/clojure/withings-cache/src/withings_cache.clj:28:3
+  ;; should through if invalid id given
+  ;; (save-meas! 17 (get-meas-one 17 "2022-12-01"))
+  (get-meas-all "2022-12-20")
+  ; clojure.lang.ExceptionInfo: babashka.curl: status 400 withings-cache /Users/hkim/clojure/withings-cache/src/withings_cache.clj:34:3
   :rcf)
