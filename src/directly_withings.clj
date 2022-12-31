@@ -1,11 +1,11 @@
-(ns directly-withings
+(ns keep.directly-withings
   "directry fetch meas from withings"
   (:require
    [babashka.curl :as curl]
    [cheshire.core :as json]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
-   [tokens :refer [login refresh-all! fetch-users]]))
+   [keep.tokens :refer [login refresh-all! fetch-users]]))
 
 (def withings "https://wbsapi.withings.net/measure")
 ;; (if (login)
