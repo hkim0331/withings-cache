@@ -8,8 +8,10 @@
 - direct downloading from withings. access tokens should be from wc.kohhoh.
 - require java.time fails in babashka.
 
-## 0.7.17-SNAPSHOT
+## 0.7.17 - 2022-12-31
 - log/debug
+- renamed `get-meas-all` to `get-save-meas-all`.
+- defined `delete-meas-since` and `update-meas-since`.
 
 ## 0.7.16 - 2022-12-31
 - added Makefile and migrations/README.md

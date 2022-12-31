@@ -181,29 +181,60 @@
   (get-meas-one 17 "2022-12-01")
   :rcf)
 
-;; function name init-db?
-(defn get-meas-all
-  [date]
+(defn get-save-meas-all
+  "Get all user meas since `lastupdate` via wc.kohhoh.jp,
+   save them in `withings.meas` table."
+  [lastupdate]
   (login)
   (refresh-all!)
-  ;; should valid users only
   (reset! users (fetch-users true))
   (doseq [{:keys [id]} @users]
-    (save-meas! id (get-meas-one id date))))
+    (save-meas! id (get-meas-one id lastupdate))))
 
 (comment
   ;; should through if invalid id given
   ;; (save-meas! 17 (get-meas-one 17 "2022-12-01"))
   (save-meas! 27 (get-meas-one 27 "2022-12-20"))
   (delete-all!)
-  (get-meas-all "2022-12-10")
+  (get-save-meas-all "2022-12-10")
   ; clojure.lang.ExceptionInfo: babashka.curl: status 400 withings-cache /Users/hkim/clojure/withings-cache/src/withings_cache.clj:34:3
   :rcf)
 
-;; % bb -m main
-(defn -main
+(defn init-db
   [& args]
   (delete-all!)
   (if (nil? args)
-    (get-meas-all "2022-09-01")
-    (get-meas-all (first args))))
+    (get-save-meas-all "2022-09-01")
+    (get-save-meas-all (first args))))
+
+(comment
+  (init-db)
+  :rcf)
+
+;;; updating
+(defn delete-meas-since
+  "delete meas from `date`."
+  [date]
+  (log/debug "delete-meas-since" date)
+  (mysql/execute!
+   db
+   ["delete from meas where created >= ?" date]))
+
+(defn update-meas-since
+  "deleting meas from date, then
+   fetch meas and save them."
+  [date]
+  (log/debug "update-meas-since")
+  (delete-meas-since date)
+  (get-save-meas-all date))
+
+(comment
+  (delete-meas-since "2022-12-20")
+  (update-meas-since "2022-12-20")
+  :rcf)
+
+(defn -main
+  [& args]
+  (if (nil? args)
+    (println "yyyy-mm-dd parameter mandatory")
+    (update-meas-since (first args))))
