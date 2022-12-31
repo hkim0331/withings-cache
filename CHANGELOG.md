@@ -8,6 +8,12 @@
 - direct downloading from withings. access tokens should be from wc.kohhoh.
 - require java.time fails in babashka.
 
+## 0.7.16 - 2022-12-31
+- added Makefile and migrations/README.md
+- worked on wc.kohhoh.jp
+- bb -m main
+- bb -m main yyyy-mm-dd
+
 ## 0.7.15 - 2022-12-31
 - changed project layout.
   src/withings_client.clj => bb/main.clj
