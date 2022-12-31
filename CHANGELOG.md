@@ -9,7 +9,7 @@
 - require java.time fails in babashka.
 
 
-## 0.6.12-SNAPSHOT
+## 0.6.13 - 2022-12-31
 - git rm --cache curl.sh, which included Bearer token.
 - namespace に分けない方が利用（配布、呼び出し）しやすいか？
 - from-unix-time, to-unix-time using `date` command.
