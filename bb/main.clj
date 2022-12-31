@@ -8,13 +8,20 @@
    [clojure.tools.logging :as log]
    [cheshire.core :as json]))
 
-;;;
 (def wc "https://wc.kohhoh.jp")
 (def cookie "cookie.txt")
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
 (def users (atom nil))
-;;;
+
+(pods/load-pod 'org.babashka/mysql "0.1.1")
+(require '[pod.babashka.mysql :as mysql])
+(def db {:dbtype   "mysql"
+         :host     "localhost"
+         :port     3306
+         :dbname   "withings"
+         :user     (System/getenv "MYSQL_USER")
+         :password (System/getenv "MYSQL_PASSWORD")})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; utils
@@ -102,16 +109,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; save meas
-
-(pods/load-pod 'org.babashka/mysql "0.1.1")
-(require '[pod.babashka.mysql :as mysql])
-(def db {:dbtype   "mysql"
-         :host     "localhost"
-         :port     3306
-         :dbname   "withings"
-         :user     (System/getenv "MYSQL_USER")
-         :password (System/getenv "MYSQL_PASSWORD")})
-
 (defn meas->float
   [{:keys [value unit]}]
   (* value (pow 10 unit)))
@@ -177,7 +174,8 @@
   (login)
   (refresh-all!)
   (get-meas-one 51 "2022-12-20")
-  ;; this must be error. `invalid user` or `user does not exist`.
+  ;; FIXME: this must be error.
+  ;;        `invalid user` or `user does not exist`.
   (get-meas-one 17 "2022-12-01")
   :rcf)
 
@@ -192,15 +190,13 @@
     (save-meas! id (get-meas-one id lastupdate))))
 
 (comment
-  ;; should through if invalid id given
-  ;; (save-meas! 17 (get-meas-one 17 "2022-12-01"))
   (save-meas! 27 (get-meas-one 27 "2022-12-20"))
   (delete-all!)
   (get-save-meas-all "2022-12-10")
-  ; clojure.lang.ExceptionInfo: babashka.curl: status 400 withings-cache /Users/hkim/clojure/withings-cache/src/withings_cache.clj:34:3
   :rcf)
 
-(defn init-db
+(defn init-meas
+  "initialize meas table"
   [& args]
   (delete-all!)
   (if (nil? args)
@@ -208,10 +204,11 @@
     (get-save-meas-all (first args))))
 
 (comment
-  (init-db)
+  (init-meas)
   :rcf)
 
 ;;; updating
+;;; first delete, then add to avoid data duplications.
 (defn delete-meas-since
   "delete meas from `date`."
   [date]
