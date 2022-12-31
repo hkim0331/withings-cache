@@ -11,8 +11,9 @@
 
 ## 0.7.18 - 2022-12-31
 - defined `update-meas-today`.
-  need str/trim-newline to use the output of `date +%F` as arguments.
-- init-db is not the -main. update-today is it.
+  need `str/trim-newline` to use the output of `date +%F` as arguments.
+- `init-db` is not the -main. `update-today` is it.
+- renamed `init-db` to `init-meas`.
 
 ## 0.7.17 - 2022-12-31
 - log/debug
