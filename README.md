@@ -1,7 +1,7 @@
 # withings-cache
 
 Withings から取ってきたデータを MariaDB にストアする babashka スクリプト。
-ekohhoh でも、ローカル PC でも同じことができるように。
+kohhoh でも、ローカル PC でも同じことができるように。
 
 ## Required
 
@@ -20,4 +20,15 @@ ekohhoh でも、ローカル PC でも同じことができるように。
 
 ## Usage
 
-under construction.
+初期化はどうする？
+
+毎日のアップデートは、
+
+    % make update
+
+or
+
+    % bb -m main
+
+これを systemd から呼び出す。
+

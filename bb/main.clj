@@ -12,6 +12,7 @@
 (def cookie "cookie.txt")
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
+
 (def users (atom nil))
 
 (pods/load-pod 'org.babashka/mysql "0.1.1")
