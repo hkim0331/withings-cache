@@ -8,6 +8,12 @@
 - direct downloading from withings. access tokens should be from wc.kohhoh.
 - require java.time fails in babashka.
 
+## 0.6.14-SNAPSHOT
+- reason?
+```
+(get-meas-all "2022-12-01")
+; clojure.lang.ExceptionInfo: babashka.curl: status 400 withings-cache /Users/hkim/clojure/withings-cache/src/withings_cache.clj:28:3
+```
 
 ## 0.6.13 - 2022-12-31
 - git rm --cache curl.sh, which included Bearer token.
