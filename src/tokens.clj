@@ -1,17 +1,16 @@
-(ns withings-cache
+(ns tokens
+  "refresh tokens, set them on wc.kohhoh.jp mariadb database."
   (:require
    [babashka.curl :as curl]
    [cheshire.core :as json]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; tokens
+(def users (atom nil))
+
 (def wc "https://wc.kohhoh.jp")
 (def cookie "cookie.txt")
 
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
-
-(def users (atom nil))
 
 (defn login
   "login. if success, updates cookie and returns 302."
@@ -20,6 +19,14 @@
         params (str "login=" admin "&password=" password)]
     (curl/post api {:raw-args ["-c" cookie "-d" params]
                     :follow-redirects false})))
+
+(defn login-success?
+  []
+  (= 302 (:status (login))))
+
+(comment
+  (login-success?)
+  :rcf)
 
 (defn curl-get [url & params]
   (curl/get url {:raw-args (vec (concat ["-b" cookie] params))}))
@@ -37,7 +44,7 @@
       vec))
 
 (comment
-  (reset! users (fetch-users))
+  (fetch-users)
   :rcf)
 
 (defn refresh!
@@ -51,19 +58,16 @@
   "use old users map internaly, returns refreshed user map.
    becore fetch-users, login is required."
   []
-  (let [ids (->> (filter :valid (fetch-users))
-                 (map :id))]
-    (doall (pmap refresh! ids))))
+  (->> (filter :valid (fetch-users))
+       (map :id)
+       (pmap refresh!)))
 
-(defn refresh-all!-test
-  [id]
+(comment
   (login)
   (refresh-all!)
   (reset! users (fetch-users))
   (->> @users
-       (filter #(= id (:id %)))
+       (filter #(= 51 (:id %)))
        first
-       :access))
-(comment
-  (refresh-all!-test 27)
+       :access)
   :rcf)
