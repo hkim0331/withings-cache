@@ -1,0 +1,9 @@
+[Unit]
+Description=Runs withings-cache daily
+
+[Timer]
+OnCalendar=*-*-* 22\:00
+Unit=withings-cache.service
+
+[Install]
+WantedBy=timers.target
