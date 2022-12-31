@@ -1,7 +1,9 @@
 (ns withings-cache
   (:require
    [babashka.curl :as curl]
+   [babashka.pods :as pods]
    [clojure.java.shell :refer [sh]]
+   [clojure.math :refer [pow]]
    [clojure.string :as str]
    [cheshire.core :as json]))
 
@@ -97,18 +99,51 @@
   (refresh-all!-test 27)
   :rcf)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; save meas
-(defn save-meas-one! [id date measures]
-  (println "save-meas-one! id:" id)
-  (println "  created:" date)
-  (println "  measures:" measures))
+
+(pods/load-pod 'org.babashka/mysql "0.1.1")
+(require '[pod.babashka.mysql :as mysql])
+(def db {:dbtype   "mysql"
+         :host     "localhost"
+         :port     3306
+         :dbname   "withings"
+         :user     (System/getenv "MYSQL_USER")
+         :password (System/getenv "MYSQL_PASSWORD")})
+
+(defn meas->float
+  [{:keys [value unit]}]
+  (* value (pow 10 unit)))
+
+;; FIXME: must uniq against (id, created)
+(defn save-meas-one!
+  "id: user_id
+   date: 1671704684
+   measures: [{:value 54600, :type 1, :unit -3, ...}
+              {:value 1100, :type 8, :unit -2, ...} ..]"
+  [id date measures]
+  (println "save-meas-one! id:" id "date:" date)
+  (doseq [{:keys [type] :as meas} measures]
+    (println "  type:" type "float value =>" (meas->float meas))
+    (mysql/execute!
+     db
+     ["insert into meas
+       (user_id, type, measure, created)
+       values (?,?,?, from_unixtime(?))"
+      id
+      type
+      (meas->float meas)
+      date])))
 
 (defn save-meas!
   [id data]
   (println "save-meas! id:" id)
   (doseq [d data]
     (save-meas-one! id (:created d) (:measures d))))
+
+(defn delete-all!
+  []
+  (mysql/execute! db ["delete from meas"]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; get meas
@@ -121,16 +156,6 @@
       :body
       (json/parse-string true)
       vec))
-
-;; not using
-;; (defn get-meas
-;;   ([id type day1]
-;;    (let [params (str "id=" id "&meastype=" type "&lastupdate=" day1)]
-;;      (get-meas-with params)))
-;;   ([id type day1 day2]
-;;    (let [params
-;;          (str "id=" id "&meastype=" type "&startdate=" day1 "&enddate=" day2)]
-;;      (get-meas-with params))))
 
 ;; WITHINGS が間違い！
 ;; meastypes ではなく、meastype
@@ -151,7 +176,7 @@
   (login)
   (refresh-all!)
   (get-meas-one 51 "2022-12-20")
-  ;; 
+  ;; this must be error. `invalid user` or `user does not exist`.
   (get-meas-one 17 "2022-12-01")
   :rcf)
 
@@ -168,6 +193,17 @@
 (comment
   ;; should through if invalid id given
   ;; (save-meas! 17 (get-meas-one 17 "2022-12-01"))
-  (get-meas-all "2022-12-20")
+  (save-meas! 27 (get-meas-one 27 "2022-12-20"))
+  (delete-all!)
+  (get-meas-all "2022-12-10")
   ; clojure.lang.ExceptionInfo: babashka.curl: status 400 withings-cache /Users/hkim/clojure/withings-cache/src/withings_cache.clj:34:3
+  :rcf)
+
+(defn init-db
+  []
+  (delete-all!)
+  (get-meas-all "2022-09-01"))
+
+(comment
+  (init-db)
   :rcf)
