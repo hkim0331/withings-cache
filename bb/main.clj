@@ -8,7 +8,7 @@
    [clojure.tools.logging :as log]
    [cheshire.core :as json]))
 
-(def wc "https://wc.kohhoh.jp")
+(def wc (System/getenv "WC"))
 (def cookie "cookie.txt")
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
