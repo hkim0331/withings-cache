@@ -8,7 +8,7 @@
    [clojure.tools.logging :as log]
    [cheshire.core :as json]))
 
-(def ^:private version "0.8.20")
+(def ^:private version "0.8.21")
 
 (def wc (System/getenv "WC"))
 (def cookie "cookie.txt")
@@ -243,6 +243,7 @@
 
 (defn -main
   [& args]
-  (if (nil? args)
-    (update-meas-today)
-    (update-meas-since (first args))))
+  (cond
+    (nil? args) (update-meas-today)
+    (= args "init") (init-meas "2022-09-01")
+    :else (update-meas-since (first args))))
