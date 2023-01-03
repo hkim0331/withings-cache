@@ -2,17 +2,21 @@
 
 ## Unreleased
 - use babashka task?
-- when doing in kyutech, it takes longer time rather than in home.
-- should be unique against same id and same created time. how?
 - hyperfiddle.rcf
 - direct downloading from withings. access tokens should be from wc.kohhoh.
 - require java.time fails in babashka.
+- how to call `init-meas` from shell?
+- periodically call `update-meas-today`. may be 'systemctl timer'.
 
+
+## 0.8.19-SNAPSHOT
+- created systemd/withings-cache.{service,timer}
+- make service
 
 ## 0.7.18 - 2022-12-31
 - defined `update-meas-today`.
   need `str/trim-newline` to use the output of `date +%F` as arguments.
-- `init-db` is not the -main. `update-today` is it.
+- `init-db` is not the -main. `update-meas-today` is it.
 - renamed `init-db` to `init-meas`.
 
 ## 0.7.17 - 2022-12-31

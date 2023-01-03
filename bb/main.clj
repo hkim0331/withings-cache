@@ -8,10 +8,13 @@
    [clojure.tools.logging :as log]
    [cheshire.core :as json]))
 
-(def wc "https://wc.kohhoh.jp")
+(def ^:private version "0.7.19")
+
+(def wc (System/getenv "WC"))
 (def cookie "cookie.txt")
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
+
 (def users (atom nil))
 
 (pods/load-pod 'org.babashka/mysql "0.1.1")
@@ -173,10 +176,10 @@
 (comment
   (login)
   (refresh-all!)
-  (get-meas-one 51 "2022-12-20")
+  (get-meas-one 51 "2022-12-01")
   ;; FIXME: this must be error.
   ;;        `invalid user` or `user does not exist`.
-  (get-meas-one 17 "2022-12-01")
+  (get-meas-one 16 "2022-12-01")
   :rcf)
 
 (defn get-save-meas-all
