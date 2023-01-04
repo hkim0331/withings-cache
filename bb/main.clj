@@ -8,7 +8,7 @@
    [clojure.tools.logging :as log]
    [cheshire.core :as json]))
 
-(def ^:private version "0.8.21")
+(def ^:private version "0.8.22")
 
 (def wc (System/getenv "WC"))
 (def cookie "cookie.txt")
