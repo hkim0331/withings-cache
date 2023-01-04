@@ -1,7 +1,8 @@
 /.calva/output-window/
-/.clj-kondo/.cache
+/.clj-kondo/.cache/
 /.lsp/.cache
 /db-dumps/
 /install/
+/.env
 cookie.txt
 curl.sh
