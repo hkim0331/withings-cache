@@ -2,8 +2,8 @@
 Description=Runs withings-cache daily
 
 [Timer]
-OnCalender=*-*-* 08:00
-OnCalendar=*-*-* 23:00
+OnCalendar=*-*-* 08:00:01
+OnCalendar=*-*-* 23:00:01
 Unit=withings-cache.service
 
 [Install]

@@ -12,6 +12,8 @@
 ## 0.8.19-SNAPSHOT
 - created systemd/withings-cache.{service,timer}
 - make service
+- fix typo OnCalener -> OnCalendar
+- EnvironmetFile's path must be aboslute.
 
 ## 0.7.18 - 2022-12-31
 - defined `update-meas-today`.
