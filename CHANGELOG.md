@@ -9,7 +9,7 @@
 - periodically call `update-meas-today`. may be 'systemctl timer'.
 
 
-## 0.8.19-SNAPSHOT
+## 0.8.22 - 2023-01-04
 - created systemd/withings-cache.{service,timer}
 - make service
 - fix typo OnCalener -> OnCalendar
