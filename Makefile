@@ -22,3 +22,8 @@ service:
 	systemctl enable withings-cache
 	systemctl start  withings-cache.timer
 	systemctl enable withings-cache.timer
+
+stop: disable
+disable:
+	systemctl stop  withings-cache.timer
+	systemctl disable withings-cache.timer
