@@ -1,10 +1,73 @@
 # withings-cache
 
 ## Unreleased
-- task
-- meas
-- when doing in kyutech, it takes longer time rather than in home. why?
-- should unique against same id and same created time.
+- use babashka task?
+- hyperfiddle.rcf
+- direct downloading from withings. access tokens should be from wc.kohhoh.
+- require java.time fails in babashka.
+- how to call `init-meas` from shell?
+- periodically call `update-meas-today`. may be 'systemctl timer'.
+
+
+## 0.8.22 - 2023-01-04
+- created systemd/withings-cache.{service,timer}
+- make service
+- fix typo OnCalener -> OnCalendar
+- EnvironmetFile's path must be aboslute.
+
+## 0.7.18 - 2022-12-31
+- defined `update-meas-today`.
+  need `str/trim-newline` to use the output of `date +%F` as arguments.
+- `init-db` is not the -main. `update-meas-today` is it.
+- renamed `init-db` to `init-meas`.
+
+## 0.7.17 - 2022-12-31
+- log/debug
+- renamed `get-meas-all` to `get-save-meas-all`.
+- defined `delete-meas-since` and `update-meas-since`.
+
+## 0.7.16 - 2022-12-31
+- added Makefile and migrations/README.md
+- worked on wc.kohhoh.jp
+- bb -m main
+- bb -m main yyyy-mm-dd
+
+## 0.7.15 - 2022-12-31
+- changed project layout.
+  src/withings_client.clj => bb/main.clj
+  launch from withing-cache diretory by;
+```
+% bb -m main
+```
+
+## 0.6.14 - 2022-12-31
+- defined init-db.
+- reason? user 17 is an invalid user.
+```
+(get-meas-all "2022-12-01")
+; clojure.lang.ExceptionInfo: babashka.curl: status 400 withings-cache /Users/hkim/clojure/withings-cache/src/withings_cache.clj:28:3
+```
+
+## 0.6.13 - 2022-12-31
+- git rm --cache curl.sh, which included Bearer token.
+- namespace に分けない方が利用（配布、呼び出し）しやすいか？
+- from-unix-time, to-unix-time using `date` command.
+
+## 0.5.11 - 2022-12-30
+- defined withings-test.
+
+## 0.5.1 - 2022-12-30
+### Fix typo(bug)
+- lastupdate for lastdate
+### Changed
+- refresh-all! calls fetch-users internally.
+
+## 0.5.0 - 2022-12-30
+### Refactor
+- `fetch-*` to `get-*` according to WITHINGS terminology.
+
+## 0.4.9 - 2022-12-30
+- withings returns all data when do not provide both meastype and meastypes. This was not described in WITHINGS's document.
 
 ## 0.3.8 - 2022-12-19
 - (filter :valid (fetch-users)) でフィルタしたユーザで、
