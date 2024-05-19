@@ -1,0 +1,12 @@
+[Unit]
+Description=Download from Withings save them in withings database
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu/withings-cache
+EnvironmentFile=/home/ubuntu/withings-cache/.env
+ExecStart=/usr/local/bin/bb -m main
+User=ubuntu
+
+[Install]
+WantedBy=multi-user.target

@@ -1,11 +1,11 @@
-(ns keep.directly-withings
+(ns fixme-directly-withings
   "directry fetch meas from withings"
   (:require
    [babashka.curl :as curl]
    [cheshire.core :as json]
    [clojure.java.shell :refer [sh]]
    [clojure.string :as str]
-   [keep.tokens :refer [login refresh-all! fetch-users]]))
+   [main :refer [login refresh-all! fetch-users]]))
 
 (def withings "https://wbsapi.withings.net/measure")
 ;; (if (login)
@@ -48,6 +48,7 @@
 
 ;; FIXME: 関数にすると失敗する。
 ;;        refresh-all! が完了しない前に access-token が呼ばれている感じ。
+;;        並列性か？
 (defn get-meas-test []
   (login)
   (refresh-all!)
