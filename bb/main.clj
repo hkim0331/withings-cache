@@ -77,7 +77,7 @@
 (defn refresh!
   "Refresh user id's refresh token."
   [id]
-  ;; (log/debug "refresh!" id)
+  (log/debug "refresh!" id)
   (curl-post (str wc "/api/token/" id "/refresh")))
 
 ;; pmap でスピードアップ。
@@ -85,6 +85,7 @@
   "use old users map internaly, returns refreshed user map.
    becore fetch-users, login is required."
   []
+  (log/debug "refresh-all!")
   (let [ids (->> (fetch-users)
                  (filter :valid)
                  (map :id))]
@@ -187,6 +188,7 @@
   "Get all user meas since `lastupdate` via wc.kohhoh.jp,
    save them in `withings.meas` table."
   [lastupdate]
+  (log/debug "get-save-meas-all" lastupdate)
   (login)
   (refresh-all!)
   (reset! users (fetch-users true))
@@ -225,8 +227,8 @@
   "deleting meas from date, then
    fetch meas and save them."
   [date]
-  (log/debug "update-meas-since")
-  (delete-meas-since date)
+  (log/debug "update-meas-since" date)
+  ;; (delete-meas-since date)
   (get-save-meas-all date))
 
 (defn- today
