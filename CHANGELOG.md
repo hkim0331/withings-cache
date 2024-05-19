@@ -8,6 +8,11 @@
 - how to call `init-meas` from shell?
 - periodically call `update-meas-today`. may be 'systemctl timer'.
 
+## v1.9.115 / 2024-05-19
+### Changed
+- bump-version.sh updates `CHANGELOG.md` and `bb/main.clj`.
+
+<!-- restart developing -->
 
 ## 0.8.22 - 2023-01-04
 - created systemd/withings-cache.{service,timer}
