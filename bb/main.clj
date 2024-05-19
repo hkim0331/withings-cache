@@ -8,17 +8,18 @@
    [clojure.tools.logging :as log]
    [cheshire.core :as json]))
 
-(def ^:private version "0.8.22")
+(def ^:private version "v1.9.113")
 
 (def wc (System/getenv "WC"))
 (def cookie "cookie.txt")
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
-
 (def users (atom nil))
 
 (pods/load-pod 'org.babashka/mysql "0.1.1")
+
 (require '[pod.babashka.mysql :as mysql])
+
 (def db {:dbtype   "mysql"
          :host     "localhost"
          :port     3306
@@ -231,7 +232,7 @@
 (defn update-meas-today
   "updating today's meas."
   []
-  (let [today (str/trim-newline(:out (sh "date" "+%F")))]
+  (let [today (str/trim-newline (:out (sh "date" "+%F")))]
     (log/debug "update-meas-today today:" today)
     (update-meas-since today)))
 
@@ -241,9 +242,18 @@
   (update-meas-today)
   :rcf)
 
+(defn print-env []
+  (println "wc" wc)
+  (println "cookie" (slurp "cookie.txt"))
+  (println "admin"  admin))
+
 (defn -main
-  [& args]
+  [& [arg]]
   (cond
-    (nil? args) (update-meas-today)
-    (= args "init") (init-meas "2022-09-01")
-    :else (update-meas-since (first args))))
+    (nil? arg) (update-meas-today)
+    (= "version" arg) (println version)
+    (= "env" arg) (print-env)
+    (= "help" arg) (println "bb -m main [version env help yyyy-mm-dd]")
+    ;; no use?
+    ;; (= "init" (first args)) (init-meas "2022-09-01")
+    :else (update-meas-since (first arg))))
