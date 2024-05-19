@@ -23,11 +23,17 @@ else
     SED="/usr/bin/sed -E"
 fi
 
+# CHANGELOG.md
+VER=$1
+TODAY=`date +%F`
+${SED} -i -e "/SNAPSHOT/c\
+## ${VER} / ${TODAY}" CHANGELOG.md
+
+# bb
+${SED} -i "s/(def \^:private version) .+/\1 \"$1\")/" bb/main.clj
+
 # project.clj
 #${SED} -i "s/(defproject \S+) \S+/\1 \"$1\"/" project.clj
-
-# clj
-${SED} -i "s/(def \^:private version) .+/\1 \"$1\")/" bb/main.clj
 
 # cljs
 #${SED} -i "s/(def \^:private version) .+/\1 \"$1\")/" src/main.cljs
