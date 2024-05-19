@@ -229,10 +229,15 @@
   (delete-meas-since date)
   (get-save-meas-all date))
 
+(defn- today
+  "returns a string 'yyyy-mm-dd'"
+  []
+  (str/trim-newline (:out (sh "date" "+%F"))))
+
 (defn update-meas-today
   "updating today's meas."
   []
-  (let [today (str/trim-newline (:out (sh "date" "+%F")))]
+  (let [today (today)]
     (log/debug "update-meas-today today:" today)
     (update-meas-since today)))
 
@@ -247,6 +252,7 @@
   (println "cookie" (slurp "cookie.txt"))
   (println "admin"  admin))
 
+;; FIXME: simpler!
 (defn -main
   [& [arg]]
   (cond
