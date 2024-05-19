@@ -7,6 +7,12 @@
 - require java.time fails in babashka.
 - how to call `init-meas` from shell?
 - periodically call `update-meas-today`. may be 'systemctl timer'.
+- babashka.curl:
+  NOTE: This library is mostly replaced by babashka.http-client which is mostly API-compatible with babashka.curl. The babashka.http-client library is built-in as of babashka version 1.1.171.
+
+## v1.11.126 / 2024-05-19
+m24 can fetch old data.
+
 
 ## v1.10.120 / 2024-05-19
 - improve main/-main

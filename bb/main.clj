@@ -8,7 +8,7 @@
    [clojure.tools.logging :as log]
    [cheshire.core :as json]))
 
-(def ^:private version "v1.10.120")
+(def ^:private version "v1.11.126")
 
 (def wc (System/getenv "WC"))
 (def cookie "cookie.txt")
@@ -42,10 +42,18 @@
       str/trim-newline))
 
 (defn curl-get [url & params]
-  (curl/get url {:raw-args (vec (concat ["-b" cookie] params))}))
+  (let [args (vec (concat ["-b" cookie] params))]
+    (log/debug "curl-get" url ":raw-args" args)
+    (curl/get url {:raw-args args})))
 
 (defn curl-post [url & params]
-  (curl/post url {:raw-args (vec (concat ["-b" cookie] params))}))
+  (let [args (vec (concat ["-b" cookie] params))]
+    (log/debug "curl-post" url ":raw-args" args)
+    (curl/post url {:raw-args args})))
+
+(comment
+  (vec (concat ["-b" cookie]))
+  :rcf)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; tokens
@@ -56,6 +64,7 @@
         params (str "login=" admin "&password=" password)]
     (curl/post api {:raw-args ["-c" cookie "-d" params]
                     :follow-redirects false})))
+
 (defn fetch-users
   "fetch users via withing-client,
    return the users data in json format.
@@ -77,7 +86,7 @@
 (defn refresh!
   "Refresh user id's refresh token."
   [id]
-  ;; (log/debug "refresh!" id)
+  (log/debug "refresh!" id)
   (curl-post (str wc "/api/token/" id "/refresh")))
 
 ;; pmap でスピードアップ。
@@ -85,6 +94,7 @@
   "use old users map internaly, returns refreshed user map.
    becore fetch-users, login is required."
   []
+  (log/debug "refresh-all!")
   (let [ids (->> (fetch-users)
                  (filter :valid)
                  (map :id))]
@@ -187,6 +197,7 @@
   "Get all user meas since `lastupdate` via wc.kohhoh.jp,
    save them in `withings.meas` table."
   [lastupdate]
+  (log/debug "get-save-meas-all" lastupdate)
   (login)
   (refresh-all!)
   (reset! users (fetch-users true))
@@ -225,8 +236,8 @@
   "deleting meas from date, then
    fetch meas and save them."
   [date]
-  (log/debug "update-meas-since")
-  (delete-meas-since date)
+  (log/debug "update-meas-since" date)
+  ;; (delete-meas-since date)
   (get-save-meas-all date))
 
 (defn- today

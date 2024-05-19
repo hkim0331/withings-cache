@@ -9,6 +9,12 @@ init:
 # Data:     {:status 400, :headers {"server" "nginx/1.18.0 (Ubuntu)", "date" "Sat, 31 Dec 2022 07:31:34 GMT", "content-type" "application/octet-stream", "content-length" "17", "connection" "keep-alive", "x-content-type-options" "nosniff", "x-frame-options" "SAMEORIGIN"}, :body "Conversion failed", :err "", :process #object[java.lang.ProcessImpl 0x3d161b9c "Process[pid=27466, exitValue=0]"], :exit 0}
 # Location: /Users/hkim/clojure/withings-cache/bb/main.clj:44:3
 
+today:
+	bb -m main >> log/`date +%F`.log
+
+since:
+	bb -m main 2024-05-01 >> log/`date +%F`.log
+
 update:
 	bb -m main >> log/`date +%F`.log
 
