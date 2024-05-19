@@ -42,10 +42,18 @@
       str/trim-newline))
 
 (defn curl-get [url & params]
-  (curl/get url {:raw-args (vec (concat ["-b" cookie] params))}))
+  (let [args (vec (concat ["-b" cookie] params))]
+    (log/debug "curl-get" url ":raw-args" args)
+    (curl/get url {:raw-args args})))
 
 (defn curl-post [url & params]
-  (curl/post url {:raw-args (vec (concat ["-b" cookie] params))}))
+  (let [args (vec (concat ["-b" cookie] params))]
+    (log/debug "curl-post" url ":raw-args" args)
+    (curl/post url {:raw-args args})))
+
+(comment
+  (vec (concat ["-b" cookie]))
+  :rcf)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; tokens
@@ -56,6 +64,7 @@
         params (str "login=" admin "&password=" password)]
     (curl/post api {:raw-args ["-c" cookie "-d" params]
                     :follow-redirects false})))
+
 (defn fetch-users
   "fetch users via withing-client,
    return the users data in json format.
