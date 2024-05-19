@@ -8,6 +8,10 @@
 - how to call `init-meas` from shell?
 - periodically call `update-meas-today`. may be 'systemctl timer'.
 
+## v1.10-SNAPSHOT
+- improve main/-main
+- defined main/today
+
 
 ## v1.9.115 / 2024-05-19
 ### Changed
