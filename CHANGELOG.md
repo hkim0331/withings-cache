@@ -8,9 +8,15 @@
 - how to call `init-meas` from shell?
 - periodically call `update-meas-today`. may be 'systemctl timer'.
 
+## v1.10.120 / 2024-05-19
+- improve main/-main
+- defined main/today
+- added kohhoh id_rsa.pub to github.com/hkim0331
+
 ## v1.9.115 / 2024-05-19
 ### Changed
 - bump-version.sh updates `CHANGELOG.md` and `bb/main.clj`.
+
 
 <!-- restart developing -->
 

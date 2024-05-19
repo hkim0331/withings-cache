@@ -1,5 +1,6 @@
 init:
 	@echo call main/init-meas
+
 # bb -x main/init-meas
 # 2022-12-31T07:31:34.320Z m2.local DEBUG [main:?] - get-meas-with id=16&lastupdate={}
 # ----- Error --------------------------------------------------------------------
@@ -12,6 +13,7 @@ update:
 	bb -m main >> log/`date +%F`.log
 
 mysql: mycli
+
 mycli:
 	mycli -u ${MYSQL_USER} -h 127.0.0.1 withings
 
@@ -19,11 +21,12 @@ service:
 	cp systemd/withings-cache.service /lib/systemd/system
 	cp systemd/withings-cache.timer   /lib/systemd/system
 	systemctl daemon-reload
-	systemctl enable withings-cache
+	# systemctl enable withings-cache
 	systemctl start  withings-cache.timer
 	systemctl enable withings-cache.timer
 
 stop: disable
+
 disable:
 	systemctl stop  withings-cache.timer
 	systemctl disable withings-cache.timer
