@@ -9,7 +9,7 @@
 - periodically call `update-meas-today`. may be 'systemctl timer'.
 
 ## v1.9.113 / 2024-05-19
-### Changed
+git ### Changed
 - bump-version.sh updates `CHANGELOG.md` and `bb/main.clj`.
 
 ## 0.8.22 - 2023-01-04
