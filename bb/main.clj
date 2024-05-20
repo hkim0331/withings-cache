@@ -193,6 +193,7 @@
   (get-meas-one 16 "2022-12-01")
   :rcf)
 
+;; use pmap?
 (defn get-save-meas-all
   "Get all user meas since `lastupdate` via wc.kohhoh.jp,
    save them in `withings.meas` table."
@@ -210,18 +211,6 @@
   (get-save-meas-all "2022-12-10")
   :rcf)
 
-(defn init-meas
-  "initialize meas table"
-  [& args]
-  (delete-all!)
-  (if (nil? args)
-    (get-save-meas-all "2022-09-01")
-    (get-save-meas-all (first args))))
-
-(comment
-  (init-meas)
-  :rcf)
-
 ;;; updating
 ;;; first delete, then add to avoid data duplications.
 (defn delete-meas-since
@@ -237,7 +226,7 @@
    fetch meas and save them."
   [date]
   (log/debug "update-meas-since" date)
-  ;; (delete-meas-since date)
+  (delete-meas-since date)
   (get-save-meas-all date))
 
 (defn- today
@@ -245,10 +234,10 @@
   []
   (str/trim-newline (:out (sh "date" "+%F"))))
 
-(defn print-env []
-  (println "wc" wc)
-  (println "cookie" (slurp "cookie.txt"))
-  (println "admin"  admin))
+;; (defn print-env []
+;;   (println "wc" wc)
+;;   (println "cookie" (slurp "cookie.txt"))
+;;   (println "admin"  admin))
 
 ;; FIXME: simpler!
 (defn -main
