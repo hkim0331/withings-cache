@@ -99,7 +99,10 @@
   (let [ids (->> (fetch-users)
                  (filter :valid)
                  (map :id))]
-    (doall (pmap refresh! ids))))
+    ;; (doall (pmap refresh! ids))
+    ;; choose non-parallel way.
+    (doseq [id ids]
+      (refresh! id))))
 
 (defn access-code [id]
   (->> @users
@@ -241,12 +244,6 @@
   "returns a string 'yyyy-mm-dd'"
   []
   (str/trim-newline (:out (sh "date" "+%F"))))
-
-
-(comment
-  (delete-meas-since "2022-12-20")
-  (update-meas-since "2022-12-20")
-  :rcf)
 
 (defn print-env []
   (println "wc" wc)

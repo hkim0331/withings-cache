@@ -13,6 +13,7 @@
 ## v1.12-SNAPSHOT
 - org.babashka/mysql 0.1.2
 - fix main.clj (first arg) -> arg
+- chose non-par way.
 
 ## v1.11.126 / 2024-05-19
 - m24 can fetch old data.
