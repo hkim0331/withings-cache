@@ -8,7 +8,7 @@
    [clojure.tools.logging :as log]
    [cheshire.core :as json]))
 
-(def ^:private version "v1.11.126")
+(def ^:private version "v1.2.131")
 
 (def wc (System/getenv "WC"))
 (def cookie "cookie.txt")
@@ -16,7 +16,7 @@
 (def password (System/getenv "WC_PASSWORD"))
 (def users (atom nil))
 
-(pods/load-pod 'org.babashka/mysql "0.1.1")
+(pods/load-pod 'org.babashka/mysql "0.1.2")
 
 (require '[pod.babashka.mysql :as mysql])
 
@@ -52,6 +52,7 @@
     (curl/post url {:raw-args args})))
 
 (comment
+  ;; ここ？
   (vec (concat ["-b" cookie]))
   :rcf)
 
@@ -84,7 +85,7 @@
   :rcf)
 
 (defn refresh!
-  "Refresh user id's refresh token."
+  "Refresh user `id`s refresh token."
   [id]
   (log/debug "refresh!" id)
   (curl-post (str wc "/api/token/" id "/refresh")))
@@ -92,23 +93,22 @@
 ;; pmap でスピードアップ。
 (defn refresh-all!
   "use old users map internaly, returns refreshed user map.
-   becore fetch-users, login is required."
+   before fetch-users, login is required."
   []
   (log/debug "refresh-all!")
   (let [ids (->> (fetch-users)
                  (filter :valid)
                  (map :id))]
-    (doall (pmap refresh! ids))))
+    ;; (doall (pmap refresh! ids))
+    ;; choose non-parallel way.
+    (doseq [id ids]
+      (refresh! id))))
 
 (defn access-code [id]
   (->> @users
        (filter #(= id (:id %)))
        first
        :access))
-
-(comment
-  (access-code 51)
-  :rcf)
 
 (defn refresh-all!-test
   [id]
@@ -245,19 +245,6 @@
   []
   (str/trim-newline (:out (sh "date" "+%F"))))
 
-(defn update-meas-today
-  "updating today's meas."
-  []
-  (let [today (today)]
-    (log/debug "update-meas-today today:" today)
-    (update-meas-since today)))
-
-(comment
-  (delete-meas-since "2022-12-20")
-  (update-meas-since "2022-12-20")
-  (update-meas-today)
-  :rcf)
-
 (defn print-env []
   (println "wc" wc)
   (println "cookie" (slurp "cookie.txt"))
@@ -266,11 +253,10 @@
 ;; FIXME: simpler!
 (defn -main
   [& [arg]]
-  (cond
-    (nil? arg) (update-meas-today)
-    (= "version" arg) (println version)
-    (= "env" arg) (print-env)
-    (= "help" arg) (println "bb -m main [version env help yyyy-mm-dd]")
-    ;; no use?
-    ;; (= "init" (first args)) (init-meas "2022-09-01")
-    :else (update-meas-since (first arg))))
+  (update-meas-since (or arg (today)))
+  #_(cond
+      (nil? arg) (update-meas-since (today))
+      (= "version" arg) (println version)
+      (= "env" arg) (print-env)
+      (= "help" arg) (println "bb -m main [version env help yyyy-mm-dd]")
+      :else (update-meas-since arg)))
