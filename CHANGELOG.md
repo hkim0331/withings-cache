@@ -11,6 +11,13 @@
   NOTE: This library is mostly replaced by babashka.http-client which is mostly API-compatible with babashka.curl. The babashka.http-client library is built-in as of babashka version 1.1.171.
 - log level, telemere?
 
+## v1.14-SNAPSHOT
+- reset database(production).
+```
+  (delete-all!)
+  (get-save-meas-all "2023-04-01")
+```
+
 ## v1.13.143 / 2024-05-23
 ### Fixed
 - use EnvironmetFile in `withings-cache.service`.
