@@ -9,8 +9,14 @@
 - periodically call `update-meas-today`. may be 'systemctl timer'.
 - babashka.curl:
   NOTE: This library is mostly replaced by babashka.http-client which is mostly API-compatible with babashka.curl. The babashka.http-client library is built-in as of babashka version 1.1.171.
+- log level, telemere?
 
-## v1.2.131 / 2024-05-20
+## v1.13.143 / 2024-05-23
+### Fixed
+- use EnvironmetFile in `withings-cache.service`.
+
+
+## v1.12.131 / 2024-05-20
 - org.babashka/mysql 0.1.2
 - fix main.clj (first arg) -> arg
 - chose non-par way.

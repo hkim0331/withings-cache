@@ -2,11 +2,13 @@
 Description=Download from Withings save them in withings database
 
 [Service]
-Type=simple
-WorkingDirectory=/home/ubuntu/withings-cache
-EnvironmentFile=/home/ubuntu/withings-cache/.env
-ExecStart=/usr/local/bin/bb -m main
+Type=oneshot
 User=ubuntu
+WorkingDirectory=/home/ubuntu/withings-cache
+EnvironmentFile=/home/ubuntu/withings-cache/env
+ExecStart=/usr/local/bin/bb -m main
+StandardOutput=append:/home/ubuntu/withings-cache/log/cache.log
+StandardError=append:/home/ubuntu/withings-cache/log/cache.log
 
 [Install]
 WantedBy=multi-user.target

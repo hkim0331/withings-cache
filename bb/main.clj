@@ -2,22 +2,24 @@
   (:require
    [babashka.curl :as curl]
    [babashka.pods :as pods]
+   [cheshire.core :as json]
    [clojure.java.shell :refer [sh]]
    [clojure.math :refer [pow]]
    [clojure.string :as str]
-   [clojure.tools.logging :as log]
-   [cheshire.core :as json]))
+   [clojure.tools.logging :as log]))
 
-(def ^:private version "v1.2.131")
+(def ^:private version "v1.13.143")
+(comment
+  (println "version" version)
+  :rcf)
 
-(def wc (System/getenv "WC"))
 (def cookie "cookie.txt")
+
+(def wc       (System/getenv "WC"))
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
-(def users (atom nil))
 
 (pods/load-pod 'org.babashka/mysql "0.1.2")
-
 (require '[pod.babashka.mysql :as mysql])
 
 (def db {:dbtype   "mysql"
@@ -29,17 +31,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; utils
-(defn to-unix-time
-  [datetime]
-  (-> (sh "date" "-d" datetime "+%s")
-      :out
-      str/trim-newline))
+;; (defn to-unix-time
+;;   [datetime]
+;;   (-> (sh "date" "-d" datetime "+%s")
+;;       :out
+;;       str/trim-newline))
 
-(defn from-unix-time
-  [n]
-  (-> (sh "date" "-d" (str "@" n) "+%Y/%m/%d %T")
-      :out
-      str/trim-newline))
+;; (defn from-unix-time
+;;   [n]
+;;   (-> (sh "date" "-d" (str "@" n) "+%Y/%m/%d %T")
+;;       :out
+;;       str/trim-newline))
 
 (defn curl-get [url & params]
   (let [args (vec (concat ["-b" cookie] params))]
@@ -51,10 +53,6 @@
     (log/debug "curl-post" url ":raw-args" args)
     (curl/post url {:raw-args args})))
 
-(comment
-  ;; ここ？
-  (vec (concat ["-b" cookie]))
-  :rcf)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; tokens
@@ -79,50 +77,28 @@
       (filter :valid ret)
       ret)))
 
-(comment
-  (reset! users (fetch-users))
-  (reset! users (fetch-users true))
-  :rcf)
-
 (defn refresh!
   "Refresh user `id`s refresh token."
   [id]
   (log/debug "refresh!" id)
   (curl-post (str wc "/api/token/" id "/refresh")))
 
-;; pmap でスピードアップ。
+;; speed up with pmap.
 (defn refresh-all!
   "use old users map internaly, returns refreshed user map.
    before fetch-users, login is required."
   []
   (log/debug "refresh-all!")
-  (let [ids (->> (fetch-users)
-                 (filter :valid)
+  (let [ids (->> (fetch-users true)
                  (map :id))]
-    ;; (doall (pmap refresh! ids))
-    ;; choose non-parallel way.
-    (doseq [id ids]
-      (refresh! id))))
-
-(defn access-code [id]
-  (->> @users
-       (filter #(= id (:id %)))
-       first
-       :access))
-
-(defn refresh-all!-test
-  [id]
-  (login)
-  (refresh-all!)
-  (reset! users (fetch-users true))
-  (access-code id))
-
-(comment
-  (refresh-all!-test 27)
-  :rcf)
+    (doall (pmap refresh! ids))
+    ;; choose non-parallel way for safety.
+    #_(doseq [id ids]
+        (refresh! id))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; save meas
+
 (defn meas->float
   [{:keys [value unit]}]
   (* value (pow 10 unit)))
@@ -155,7 +131,16 @@
 
 (defn delete-all!
   []
+  (log/debug "delete-all!")
   (mysql/execute! db ["delete from meas"]))
+
+(defn delete-meas-since
+  "delete meas from `date`."
+  [date]
+  (log/debug "delete-meas-since" date)
+  (mysql/execute!
+   db
+   ["delete from meas where created >= ?" date]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; get meas
@@ -193,6 +178,7 @@
   (get-meas-one 16 "2022-12-01")
   :rcf)
 
+;; use pmap?
 (defn get-save-meas-all
   "Get all user meas since `lastupdate` via wc.kohhoh.jp,
    save them in `withings.meas` table."
@@ -200,44 +186,23 @@
   (log/debug "get-save-meas-all" lastupdate)
   (login)
   (refresh-all!)
-  (reset! users (fetch-users true))
-  (doseq [{:keys [id]} @users]
+  (doseq [{:keys [id]} (fetch-users true)]
     (save-meas! id (get-meas-one id lastupdate))))
 
 (comment
-  (save-meas! 27 (get-meas-one 27 "2022-12-20"))
   (delete-all!)
-  (get-save-meas-all "2022-12-10")
-  :rcf)
-
-(defn init-meas
-  "initialize meas table"
-  [& args]
-  (delete-all!)
-  (if (nil? args)
-    (get-save-meas-all "2022-09-01")
-    (get-save-meas-all (first args))))
-
-(comment
-  (init-meas)
+  (get-save-meas-all "2023-04-01")
   :rcf)
 
 ;;; updating
 ;;; first delete, then add to avoid data duplications.
-(defn delete-meas-since
-  "delete meas from `date`."
-  [date]
-  (log/debug "delete-meas-since" date)
-  (mysql/execute!
-   db
-   ["delete from meas where created >= ?" date]))
 
 (defn update-meas-since
   "deleting meas from date, then
    fetch meas and save them."
   [date]
   (log/debug "update-meas-since" date)
-  ;; (delete-meas-since date)
+  (delete-meas-since date)
   (get-save-meas-all date))
 
 (defn- today
@@ -245,18 +210,13 @@
   []
   (str/trim-newline (:out (sh "date" "+%F"))))
 
-(defn print-env []
-  (println "wc" wc)
-  (println "cookie" (slurp "cookie.txt"))
-  (println "admin"  admin))
-
-;; FIXME: simpler!
 (defn -main
   [& [arg]]
-  (update-meas-since (or arg (today)))
-  #_(cond
-      (nil? arg) (update-meas-since (today))
-      (= "version" arg) (println version)
-      (= "env" arg) (print-env)
-      (= "help" arg) (println "bb -m main [version env help yyyy-mm-dd]")
-      :else (update-meas-since arg)))
+  (update-meas-since (or arg (today))))
+
+(comment
+  (-main)
+  (-main "2024-05-01")
+
+  (-main "2023-04-01")
+  :rcf)
