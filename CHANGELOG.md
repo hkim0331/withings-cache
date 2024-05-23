@@ -11,6 +11,9 @@
   NOTE: This library is mostly replaced by babashka.http-client which is mostly API-compatible with babashka.curl. The babashka.http-client library is built-in as of babashka version 1.1.171.
 - log level
 
+## v1.3-SNAPSHOT
+fix systemd.
+
 
 ## v1.2.131 / 2024-05-20
 - org.babashka/mysql 0.1.2

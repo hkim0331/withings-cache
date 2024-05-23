@@ -8,3 +8,4 @@
 /.env
 cookie.txt
 curl.sh
+/withings-cache.service

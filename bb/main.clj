@@ -239,7 +239,7 @@
 ;;   (println "cookie" (slurp "cookie.txt"))
 ;;   (println "admin"  admin))
 
-;; FIXME: simpler!
+;; FIXME: make it simpler!
 (defn -main
   [& [arg]]
   (update-meas-since (or arg (today)))
