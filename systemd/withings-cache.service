@@ -2,14 +2,10 @@
 Description=Download from Withings save them in withings database
 
 [Service]
-Type=simple
+Type=oneshot
 User=ubuntu
 WorkingDirectory=/home/ubuntu/withings-cache
-Environment=WC=
-Environment=WC_LOGIN=
-Environment=WC_PASSWORD=
-Environment=MYSQL_USER=
-Environment=MYSQL_PASSWORD=
+EnvironmentFile=/home/ubuntu/withings-cache/env
 ExecStart=/usr/local/bin/bb -m main
 StandardOutput=append:/home/ubuntu/withings-cache/log/cache.log
 StandardError=append:/home/ubuntu/withings-cache/log/cache.log

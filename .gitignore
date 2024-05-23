@@ -1,11 +1,10 @@
 /.calva/output-window/
 /.clj-kondo/.cache/
 /.lsp/.cache
+/cookie.txt
+/curl.sh
 /db-dumps/*
 !/db-dumps/dump.sh
+!/db-dumps/fetch.sh
 !/db-dumps/restore.sh
-/install/
-/.env
-cookie.txt
-curl.sh
-/withings-cache.service
+/env

@@ -2,20 +2,22 @@
   (:require
    [babashka.curl :as curl]
    [babashka.pods :as pods]
+   [cheshire.core :as json]
    [clojure.java.shell :refer [sh]]
    [clojure.math :refer [pow]]
    [clojure.string :as str]
-   [clojure.tools.logging :as log]
-   [cheshire.core :as json]))
+   [clojure.tools.logging :as log]))
 
 (def ^:private version "v1.2.131")
-(println "version" version)
+(comment
+  (println "version" version)
+  :rcf)
 
-(def wc (System/getenv "WC"))
 (def cookie "cookie.txt")
+
+(def wc       (System/getenv "WC"))
 (def admin    (System/getenv "WC_LOGIN"))
 (def password (System/getenv "WC_PASSWORD"))
-;; (def users (atom nil))
 
 (pods/load-pod 'org.babashka/mysql "0.1.2")
 (require '[pod.babashka.mysql :as mysql])
@@ -94,25 +96,9 @@
     #_(doseq [id ids]
         (refresh! id))))
 
-;; (defn access-code [id]
-;;   (->> @users
-;;        (filter #(= id (:id %)))
-;;        first
-;;        :access))
-
-;; (defn refresh-all!-test
-;;   [id]
-;;   (login)
-;;   (refresh-all!)
-;;   (reset! users (fetch-users true))
-;;   (access-code id))
-
-;; (comment
-;;   (refresh-all!-test 27)
-;;   :rcf)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; save meas
+
 (defn meas->float
   [{:keys [value unit]}]
   (* value (pow 10 unit)))
@@ -210,7 +196,6 @@
 
 ;;; updating
 ;;; first delete, then add to avoid data duplications.
-
 
 (defn update-meas-since
   "deleting meas from date, then
